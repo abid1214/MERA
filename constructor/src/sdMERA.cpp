@@ -85,10 +85,10 @@ void sdMERA::addContractedSite(int site_st, int site_op, int site_ed, int phy, i
 	uG.push_back(tp);
 	bool id_g = is_indentity(A);
 	//std::cout<<"Unitary gate is identity = "<<id_g<<std::endl;
-	if(id_g)
-		std::cout<<site_op<<"\t"<<site_op<<"\t"<<site_op<<"\t"<<phy<<std::endl;
-	else
-		std::cout<<site_st<<"\t"<<site_op<<"\t"<<site_ed<<"\t"<<phy<<std::endl;
+	//if(id_g)
+	//	std::cout<<site_op<<"\t"<<site_op<<"\t"<<site_op<<"\t"<<phy<<std::endl;
+	//else
+	//	std::cout<<site_st<<"\t"<<site_op<<"\t"<<site_ed<<"\t"<<phy<<std::endl;
 }
 
 void sdMERA::buildMPS(MPS& psi)
@@ -268,16 +268,9 @@ void sdMERA::unitaryDecimateMPO(char opt)
 		}
 	}
 	
-	if(opt=='L')
-	{
-		//std::cout<<"Fixing site "<<H.M_IDs[idx+max_gap_site]<<" to "<<phy<<std::endl;
-		addContractedSite(H.M_IDs[max_gap_site],H.M_IDs[idx+max_gap_site],H.M_IDs[max_gap_L+max_gap_site-1],phy,max_gap_L,idx,U);
-	}
-	else
-	{
-		//std::cout<<"Fixing site "<<H.M_IDs[idx+max_gap_site]<<" to "<<1-phy<<std::endl;
-		addContractedSite(H.M_IDs[max_gap_site],H.M_IDs[idx+max_gap_site],H.M_IDs[max_gap_L+max_gap_site-1],1-phy,max_gap_L,idx,U);
-	}
+    int opt_phy = opt=='L' ? phy : 1 - phy;
+	addContractedSite(H.M_IDs[max_gap_site],H.M_IDs[idx+max_gap_site],H.M_IDs[max_gap_L+max_gap_site-1],opt_phy,max_gap_L,idx,U);
+	//std::cout<<"Fixing site "<<H.M_IDs[idx+max_gap_site]<<" to "<<opt_phy<<std::endl;
 	
     //cout<<"getting tau bits"<<endl;
 	D = U.transpose() * A * U;
@@ -286,6 +279,18 @@ void sdMERA::unitaryDecimateMPO(char opt)
 	
 	if(L>1)
 	{
+
+        if(L<6)
+        {
+            Eigen::SelfAdjointEigenSolver<Mxd> es(A);
+            if (es.info() != Eigen::Success) abort();
+            std::cout<<L<<"\t";
+            for(int k = 0; k < std::pow(pD,L); k++)
+                std::cout<<es.eigenvalues()(k)<<"\t";
+            std::cout<<std::endl;
+        }
+
+
         //cout<<"applying gates"<<endl;
 		applyGates(U, H, max_gap_site, max_gap_L, max_bD);
 		int idx_new = idx;
@@ -343,14 +348,12 @@ void sdMERA::unitaryDecimateMPO(char opt)
 		H.copyMPO(HH);
 	}else
 	{
-        //cout<<"getting eigens"<<endl;
-		Eigen::SelfAdjointEigenSolver<Mxd> es(A);
-		if (es.info() != Eigen::Success) abort();
-		/*if(opt=='L')
-			std::cout<<"Final energy ="<<es.eigenvalues()(0)<<std::endl;
-		else
-			std::cout<<"Final energy ="<<es.eigenvalues()(1)<<std::endl;
-        */
+        Eigen::SelfAdjointEigenSolver<Mxd> es(A);
+        if (es.info() != Eigen::Success) abort();
+        std::cout<<L<<"\t";
+        for(int k = 0; k < std::pow(pD,L); k++)
+            std::cout<<es.eigenvalues()(k)<<"\t";
+        std::cout<<std::endl;
 	}
 	
 	L--;
@@ -375,6 +378,12 @@ void sdMERA::renormalize()
         */
 		idx++;
 	}
+    MPO A;
+    A.copyMPO(H);
+    std::cout<<"calculating EE"<<std::endl;
+    std::cout<<"MPO EE = ";
+    A.EE();
+    std::cout<<" "<<std::endl;
 }
 
 #endif

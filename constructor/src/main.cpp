@@ -140,16 +140,15 @@ void testTauBit(int _RS)
 }
 
 
-void Abidtest(double W)
+void Abidtest(double W, int L, unsigned seed, unsigned seed2)
 {
-    int L  = 32;
 	int pD = 2;
 	int bD = 5;
 	double WJ = 0;
 	double Wh = W;
 
-	unsigned seed = 32;
-	std::mt19937 generator (seed);
+    //unsigned seed = 31;
+	std::mt19937 generator (seed2);
 	std::uniform_real_distribution<double> distribution(0.0,1.0);
     char* opts = new char [L];
     for(int j = 0; j < L; ++j)
@@ -160,12 +159,22 @@ void Abidtest(double W)
 	sdM.setMaxBondDim(40);
 	sdM.setWJ(WJ);
 	sdM.setWh(Wh);
-	sdM.setRandomSeed(seed - 1);
-	sdM.setMaxSearchLength(1,4);
+	sdM.setRandomSeed(seed);
+	sdM.setMaxSearchLength(1,8);
 	sdM.setInitialMPO(L,pD,bD);
     sdM.setOpts(opts);
 
     sdM.renormalize();
+
+	MPS psi;
+    sdM.setInitialMPO(L,pD,bD);
+    sdM.buildMPS(psi);
+    psi.RC();
+    cout<<"Norm of MPS = "<<psiphi(psi,psi)<<endl;
+    double E = psiHphi(psi,sdM.H,psi);
+    double SE = psiHphi(psi,sdM.HS,psi);
+    cout<<"MPS Info: "<<E<<" "<<SE-E*E<<" ";
+    psi.EE();
 
     /*
     if(sdM.good_RG_flow)
@@ -180,8 +189,11 @@ void Abidtest(double W)
 
 int main (int argc, char const *argv[])
 {
-	double W = argc>1 ? atof(argv[1]) : 0;
+	double      W  = argc>1 ? atof(argv[1]) : 0;
+    int         L  = argc>2 ? atof(argv[2]) : 32;
+    unsigned seed  = argc>3 ? atof(argv[3]) : (unsigned int)time(NULL);
+    unsigned seed2 = argc>4 ? atof(argv[4]) : (unsigned int)time(NULL);
     //cout<<"W = "<<W<<endl;
-    Abidtest(W);
+    Abidtest(W, L, seed, seed2);
 	return 0;
 }
