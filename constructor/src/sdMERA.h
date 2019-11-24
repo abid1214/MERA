@@ -76,13 +76,13 @@ public:
 	void setWJ(double t);
 	void setWh(double t);
 	void setRandomSeed(int t);
-	void setDisorderConfig();
+	void setDisorderConfig(bool uniform);
 	
 	void setMaxSearchLength(int st, int maxLen);
 	
 	void setOpts(char* _opts);
 	
-	void setInitialMPO(int _L, int _pD, int _bD);
+	void setInitialMPO(int _L, int _pD, int _bD, bool uniform);
 	void findMaxGap();
 	double getTauBits(Mxd& A, int& tpL, int& pos);
 	void getTauBits(Mxd& A, int& tpL);

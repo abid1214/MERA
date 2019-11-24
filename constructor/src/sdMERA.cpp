@@ -26,16 +26,26 @@ void sdMERA::setRandomSeed(int t)
 	randSeed = t;
 }
 
-void sdMERA::setDisorderConfig()
+void sdMERA::setDisorderConfig(bool uniform)
 {
 	srand48(137*randSeed);
 	dJ.clear();
 	dh.clear();
-	for(int i = 0; i < L; ++i)
-	{
-		dJ.push_back(2*WJ*(drand48()-0.5));
-		dh.push_back(2*Wh*(drand48()-0.5));
-	}
+    if(uniform) {
+        for(int i = 0; i < L; ++i)
+        {
+            dJ.push_back(WJ);
+            dh.push_back(Wh);
+        }
+    }
+    else {
+        for(int i = 0; i < L; ++i)
+        {
+            dJ.push_back(2*WJ*(drand48()-0.5));
+            dh.push_back(2*Wh*(drand48()-0.5));
+        }
+    }
+	
 }
 
 void sdMERA::setMaxSearchLength(int st, int maxLen)
@@ -57,20 +67,24 @@ void sdMERA::setOpts(char* _opts)
 	g_factors.clear();
 }
 
-void sdMERA::setInitialMPO(int _L, int _pD, int _bD)
+void sdMERA::setInitialMPO(int _L, int _pD, int _bD, bool uniform)
 {
 	L  = _L;
 	pD = _pD;
 	bD = _bD;
-	setDisorderConfig();
+	setDisorderConfig(uniform);
 	
 	H.clearMPO();
 	H.setMPO(L, pD, bD, 0);
-	H.buildHeisenberg(&dJ[0],&dh[0]);
+	H.buildHeisenberg(&dJ[0], &dh[0]);
+    Mxd A;
+	effH(H,0,L,A);
+    cout<<A<<endl;
+
 	
 	HS.clearMPO();
 	HS.setMPO(L, pD, bD, 0);
-	HS.buildHeisenberg(&dJ[0],&dh[0]);
+	HS.buildHeisenberg(&dJ[0], &dh[0]);
 	HS.square();
 }
 
@@ -228,6 +242,7 @@ void sdMERA::unitaryDecimateMPO(char opt)
 	Mxd A,U,D;
     //cout<<"calculating effective hamiltonian"<<std::endl;
 	effH(H,max_gap_site,max_gap_L,A);
+    cout<<A<<endl;
 	bool perm_found = false;
 	double Init_Tol = 1e-5;
 	double Init_Tau = 1e-4;
@@ -285,8 +300,9 @@ void sdMERA::unitaryDecimateMPO(char opt)
             Eigen::SelfAdjointEigenSolver<Mxd> es(A);
             if (es.info() != Eigen::Success) abort();
             std::cout<<L<<"\t";
+		    Mxd evls = es.eigenvalues();
             for(int k = 0; k < std::pow(pD,L); k++)
-                std::cout<<es.eigenvalues()(k)<<"\t";
+                std::cout<<evls(k)<<"\t";
             std::cout<<std::endl;
         }
 
@@ -351,8 +367,9 @@ void sdMERA::unitaryDecimateMPO(char opt)
         Eigen::SelfAdjointEigenSolver<Mxd> es(A);
         if (es.info() != Eigen::Success) abort();
         std::cout<<L<<"\t";
+		Mxd evls = es.eigenvalues();
         for(int k = 0; k < std::pow(pD,L); k++)
-            std::cout<<es.eigenvalues()(k)<<"\t";
+            std::cout<<evls(k)<<"\t";
         std::cout<<std::endl;
 	}
 	
