@@ -38,7 +38,7 @@ typedef Eigen::MatrixXd Mxd;
 
 void Abidtest(double W, int L, unsigned seed, unsigned seed2)
 {
-    bool uniform = true;
+    bool uniform = false;
 	int pD = 2;
 	int bD = 5;
 	double WJ = 0;
@@ -60,7 +60,6 @@ void Abidtest(double W, int L, unsigned seed, unsigned seed2)
 	sdM.setMaxSearchLength(1,4);
 	sdM.setInitialMPO(L,pD,bD, uniform);
     sdM.setOpts(opts);
-    exit(0);
 
     sdM.renormalize();
 
@@ -68,11 +67,11 @@ void Abidtest(double W, int L, unsigned seed, unsigned seed2)
     sdM.setInitialMPO(L,pD,bD, uniform);
     sdM.buildMPS(psi);
     psi.RC();
-    cout<<"Norm of MPS = "<<psiphi(psi,psi)<<endl;
+
     double E = psiHphi(psi,sdM.H,psi);
     double SE = psiHphi(psi,sdM.HS,psi);
-    cout<<"MPS Info: "<<E<<" "<<SE-E*E<<" ";
-    psi.EE();
+    cout<<"MPS Info: "<<E<<" "<<SE-E*E<<endl;
+    //psi.EE();
 
     /*
     if(sdM.good_RG_flow)

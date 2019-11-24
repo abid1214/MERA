@@ -1,13 +1,13 @@
 #!/bin/bash
 source /opt/intel/bin/compilervars.sh intel64
 
-L=64
+L=128
 dseed=31
 
 W=${1}
 #for W in `seq 1 10`
 #do
-d="data/last_few_bits_L_${L}_energy_avg/W_${W}"
+d="data/L_${L}_variance/W_${W}"
 mkdir -p ${d}
 echo $d
 

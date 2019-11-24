@@ -77,9 +77,6 @@ void sdMERA::setInitialMPO(int _L, int _pD, int _bD, bool uniform)
 	H.clearMPO();
 	H.setMPO(L, pD, bD, 0);
 	H.buildHeisenberg(&dJ[0], &dh[0]);
-    Mxd A;
-	effH(H,0,L,A);
-    cout<<A<<endl;
 
 	
 	HS.clearMPO();
@@ -99,10 +96,10 @@ void sdMERA::addContractedSite(int site_st, int site_op, int site_ed, int phy, i
 	uG.push_back(tp);
 	bool id_g = is_indentity(A);
 	//std::cout<<"Unitary gate is identity = "<<id_g<<std::endl;
-	//if(id_g)
-	//	std::cout<<site_op<<"\t"<<site_op<<"\t"<<site_op<<"\t"<<phy<<std::endl;
-	//else
-	//	std::cout<<site_st<<"\t"<<site_op<<"\t"<<site_ed<<"\t"<<phy<<std::endl;
+	if(id_g)
+		std::cout<<site_op<<"\t"<<site_op<<"\t"<<site_op<<"\t"<<phy<<std::endl;
+	else
+		std::cout<<site_st<<"\t"<<site_op<<"\t"<<site_ed<<"\t"<<phy<<std::endl;
 }
 
 void sdMERA::buildMPS(MPS& psi)
@@ -139,7 +136,7 @@ void sdMERA::buildMPS(MPS& psi)
 		MPS phi(psi.Len,psi.pD,std::min(psi.bD,max_bD));
 		phi.setZero();
 		phi.setDim();
-		if(psi.bD>phi.bD) iterCompress(true, 4, 1e-14, max_bD, psi, true);
+		if(psi.bD>phi.bD) iterCompress(true, 4, 1e-14, max_bD, psi, false);
 	}
 }
 
@@ -242,7 +239,6 @@ void sdMERA::unitaryDecimateMPO(char opt)
 	Mxd A,U,D;
     //cout<<"calculating effective hamiltonian"<<std::endl;
 	effH(H,max_gap_site,max_gap_L,A);
-    cout<<A<<endl;
 	bool perm_found = false;
 	double Init_Tol = 1e-5;
 	double Init_Tau = 1e-4;
@@ -295,6 +291,7 @@ void sdMERA::unitaryDecimateMPO(char opt)
 	if(L>1)
 	{
 
+        /*
         if(L<6)
         {
             Eigen::SelfAdjointEigenSolver<Mxd> es(A);
@@ -305,6 +302,7 @@ void sdMERA::unitaryDecimateMPO(char opt)
                 std::cout<<evls(k)<<"\t";
             std::cout<<std::endl;
         }
+        */
 
 
         //cout<<"applying gates"<<endl;
@@ -366,8 +364,8 @@ void sdMERA::unitaryDecimateMPO(char opt)
 	{
         Eigen::SelfAdjointEigenSolver<Mxd> es(A);
         if (es.info() != Eigen::Success) abort();
-        std::cout<<L<<"\t";
 		Mxd evls = es.eigenvalues();
+        std::cout<<"Final Energies: ";
         for(int k = 0; k < std::pow(pD,L); k++)
             std::cout<<evls(k)<<"\t";
         std::cout<<std::endl;
@@ -383,24 +381,16 @@ void sdMERA::renormalize()
 	while(L>0)
 	{
 		unitaryDecimateMPO(opts[idx]);
-		/*(L>=2)
-		{
-			MPO A;
-			A.copyMPO(H);
-			std::cout<<"calculating EE"<<std::endl;
-			std::cout<<"MPO EE = ";
-			A.EE();
-			std::cout<<" "<<L<<std::endl;
-		}
-        */
 		idx++;
 	}
+    /*
     MPO A;
     A.copyMPO(H);
     std::cout<<"calculating EE"<<std::endl;
     std::cout<<"MPO EE = ";
     A.EE();
     std::cout<<" "<<std::endl;
+    */
 }
 
 #endif
