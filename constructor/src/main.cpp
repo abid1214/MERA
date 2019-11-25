@@ -57,7 +57,7 @@ void Abidtest(double W, int L, unsigned seed, unsigned seed2)
 	sdM.setWJ(WJ);
 	sdM.setWh(Wh);
 	sdM.setRandomSeed(seed);
-	sdM.setMaxSearchLength(1,4);
+	sdM.setMaxSearchLength(1,8);
 	sdM.setInitialMPO(L,pD,bD, uniform);
     sdM.setOpts(opts);
 

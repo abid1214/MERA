@@ -112,9 +112,7 @@ void sdMERA::buildMPS(MPS& psi)
 	MPO H;
 	EDtoMPO(uG[s-1].M, uG[s-1].L, pD, H);
 	for(int i = 0; i < pD; ++i)
-	{
 		psi.M[0][i] = H.M[0][i*pD+(uG[s-1].phy)];
-	}
 	psi.setDim();
 	positions.push_back(uG[s-1].site);
 	//std::cout<<"Unitary Gate at the two site level: "<<std::endl<<uG[s-2].M<<std::endl;
@@ -230,20 +228,20 @@ void sdMERA::unitaryDecimateMPO(char opt)
 {
 	assert(opt=='L'||opt=='H');
 	
-    //cout<<"finding max gap"<<std::endl;
+    cout<<"finding max gap"<<std::endl;
 	findMaxGap();
 	
 	int pos = max_gap_site;
 	int tpL = max_gap_L;
 	
 	Mxd A,U,D;
-    //cout<<"calculating effective hamiltonian"<<std::endl;
+    cout<<"calculating effective hamiltonian"<<std::endl;
 	effH(H,max_gap_site,max_gap_L,A);
 	bool perm_found = false;
 	double Init_Tol = 1e-5;
 	double Init_Tau = 1e-4;
 
-    //cout<<"performing Wegner flow"<<endl;
+    cout<<"performing Wegner flow"<<endl;
 	while(!perm_found)
 	{
 		WegnerDiagonalize WD;
@@ -263,7 +261,7 @@ void sdMERA::unitaryDecimateMPO(char opt)
 	int phy = 0;
 	double sum=9999;
 	
-	// Looking for the bond to decimate
+	cout<<"Looking for the bond to decimate"<<std::endl;
 	for(int i = 0; i < max_gap_L; ++i)
 	{
 		std::vector<double> tp(pD);
@@ -283,7 +281,7 @@ void sdMERA::unitaryDecimateMPO(char opt)
 	addContractedSite(H.M_IDs[max_gap_site],H.M_IDs[idx+max_gap_site],H.M_IDs[max_gap_L+max_gap_site-1],opt_phy,max_gap_L,idx,U);
 	//std::cout<<"Fixing site "<<H.M_IDs[idx+max_gap_site]<<" to "<<opt_phy<<std::endl;
 	
-    //cout<<"getting tau bits"<<endl;
+    cout<<"getting tau bits"<<endl;
 	D = U.transpose() * A * U;
 	double leading_energy = getTauBits(D, max_gap_L, idx);
 	getTauBits(D, max_gap_L);
@@ -305,7 +303,7 @@ void sdMERA::unitaryDecimateMPO(char opt)
         */
 
 
-        //cout<<"applying gates"<<endl;
+        cout<<"applying gates"<<endl;
 		applyGates(U, H, max_gap_site, max_gap_L, max_bD);
 		int idx_new = idx;
 		if(max_gap_site-1>=0)
@@ -319,7 +317,7 @@ void sdMERA::unitaryDecimateMPO(char opt)
 			tpL += 1;
 		}
 
-        //cout<<"calculating Heff"<<endl;
+        cout<<"calculating Heff"<<endl;
 		effH(H,pos,tpL,A);
 		double g_factor = -99999;
 		int idx_i=0, idx_j=0;
@@ -336,11 +334,11 @@ void sdMERA::unitaryDecimateMPO(char opt)
                 }
 			}
 		}
-		//std::cout<<"Max g factor = "<<g_factor<<" "<<A(idx_i,idx_i)<<" "<<A(idx_j,idx_j)<<std::endl;
+		std::cout<<"Max g factor = "<<g_factor<<" "<<A(idx_i,idx_i)<<" "<<A(idx_j,idx_j)<<std::endl;
 		if(g_factor>0) good_RG_flow = false;
 		g_factors.push_back(g_factor);
 
-        //cout<<"getting eigens"<<endl;
+        cout<<"getting eigens"<<endl;
 		Eigen::SelfAdjointEigenSolver<Mxd> es(A);
 		Mxd evls = es.eigenvalues();
 		double mean_gap_ratio = 0;
@@ -352,7 +350,7 @@ void sdMERA::unitaryDecimateMPO(char opt)
 		  }
 		//if(evls.size()-2>0) std::cout<<"MGapRatio = "<<mean_gap_ratio/(evls.size()-2)<<std::endl;
 		
-        //std::cout<<"decimating Hamiltonian"<<endl;
+        std::cout<<"decimating Hamiltonian"<<endl;
 		MPO HH(L-1,pD,bD,0);
 		if(opt=='L')
 			HH.decimateCopy(H, max_gap_site+idx, phy);
