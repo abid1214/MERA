@@ -108,7 +108,7 @@ bool WegnerDiagonalize::diag(Mxd& _U) {
 
         maxDelta=std::max(findMax(matrixDeltaH,true),findMax(matrixDeltaU,true));
         
-		// std::cout<<"Step="<<steps<<"  maxDelta="<<maxDelta<<" off-diag="<<offDiagMax<<std::endl;
+		//std::cout<<"Step="<<steps<<"  maxDelta="<<maxDelta<<" off-diag="<<offDiagMax<<std::endl;
         if(findNaN(DeltaH4)||findNaN(DeltaH5)||findNaN(DeltaU4)||findNaN(DeltaU5))
 		{
             deltaTau=0.1;

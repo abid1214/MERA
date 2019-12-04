@@ -49,7 +49,8 @@ void Abidtest(double W, int L, unsigned seed, unsigned seed2)
 	std::uniform_real_distribution<double> distribution(0.0,1.0);
     char* opts = new char [L];
     for(int j = 0; j < L; ++j)
-        opts[L-j-1] = distribution(generator)>0.5 ? 'L' : 'H';
+        //opts[L-j-1] = distribution(generator)>0.5 ? 'L' : 'H';
+        opts[L-j-1] = 'L';
 
 
 	sdMERA sdM;
@@ -57,21 +58,34 @@ void Abidtest(double W, int L, unsigned seed, unsigned seed2)
 	sdM.setWJ(WJ);
 	sdM.setWh(Wh);
 	sdM.setRandomSeed(seed);
-	sdM.setMaxSearchLength(1,8);
+	sdM.setMaxSearchLength(1,4);
 	sdM.setInitialMPO(L,pD,bD, uniform);
     sdM.setOpts(opts);
 
-    sdM.renormalize();
+    MPO h;
+    h.clearMPO();
+    h.setMPO(L, pD, bD, 0);
+    h.buildHeisenberg(&(sdM.dJ[0]), &(sdM.dh[0]));
 
-	MPS psi;
-    sdM.setInitialMPO(L,pD,bD, uniform);
+    MPO hS;
+    hS.clearMPO();
+    hS.setMPO(L, pD, bD, 0);
+    hS.buildHeisenberg(&(sdM.dJ[0]), &(sdM.dh[0]));
+    hS.square();
+
+	cout<<"st\top\ted\tphy"<<endl;
+    for(int i = 0; i < L; i++)
+    {
+        sdM.unitaryDecimateMPO(opts[i]);
+    }
+
+    MPS psi;
     sdM.buildMPS(psi);
     psi.RC();
-
-    double E = psiHphi(psi,sdM.H,psi);
-    double SE = psiHphi(psi,sdM.HS,psi);
-    cout<<"MPS Info: "<<E<<" "<<SE-E*E<<endl;
-    //psi.EE();
+    double E = psiHphi(psi,h,psi);
+    double SE = psiHphi(psi,hS,psi);
+    cout<<"MPS Info: "<<E<<" "<<SE-E*E;
+    psi.EE();
 
     /*
     if(sdM.good_RG_flow)

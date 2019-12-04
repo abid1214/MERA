@@ -2,6 +2,7 @@
 #define My_sdMERA_CLASS
 
 #include "sdMERA.h"
+#include "observables.h"
 typedef Eigen::MatrixXd Mxd;
 using namespace std;
 
@@ -77,6 +78,10 @@ void sdMERA::setInitialMPO(int _L, int _pD, int _bD, bool uniform)
 	H.clearMPO();
 	H.setMPO(L, pD, bD, 0);
 	H.buildHeisenberg(&dJ[0], &dh[0]);
+
+    //Mxd A;
+    //effH(H, 0, L, A);
+    //std::cout<<A<<std::endl;
 
 	
 	HS.clearMPO();
@@ -242,7 +247,8 @@ void sdMERA::unitaryDecimateMPO(char opt)
 	double Init_Tau = 1e-4;
 
     //cout<<"performing Wegner flow"<<endl;
-    /*
+    
+    
 	while(!perm_found)
 	{
 		WegnerDiagonalize WD;
@@ -253,10 +259,12 @@ void sdMERA::unitaryDecimateMPO(char opt)
 		Init_Tol /= 1.1;
 		Init_Tau *= 1.1;
 	}
-    */
+    
+    
 
-	Eigen::SelfAdjointEigenSolver<Mxd> es(A);
-    U = es.eigenvectors();
+	//Eigen::SelfAdjointEigenSolver<Mxd> es(A);
+    //U = es.eigenvectors();
+
 	D = (U.transpose() * A * U).diagonal();
 	
 	// Which index to fix?
@@ -376,23 +384,5 @@ void sdMERA::unitaryDecimateMPO(char opt)
 	L--;
 }
 
-void sdMERA::renormalize()
-{
-	int idx = 0;
-	std::cout<<"st\top\ted\tphy"<<std::endl;
-	while(L>0)
-	{
-		unitaryDecimateMPO(opts[idx]);
-		idx++;
-	}
-    /*
-    MPO A;
-    A.copyMPO(H);
-    std::cout<<"calculating EE"<<std::endl;
-    std::cout<<"MPO EE = ";
-    A.EE();
-    std::cout<<" "<<std::endl;
-    */
-}
 
 #endif
