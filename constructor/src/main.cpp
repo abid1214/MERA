@@ -36,7 +36,7 @@ typedef Eigen::MatrixXd Mxd;
 #include "tauSolver.h"
 
 
-void Abidtest(double W, int L, unsigned seed, unsigned seed2)
+void Abidtest(double W, int L, unsigned seed, double epsilon)
 {
     bool uniform = false;
 	int pD = 2;
@@ -45,20 +45,20 @@ void Abidtest(double W, int L, unsigned seed, unsigned seed2)
 	double Wh = W;
 
     //unsigned seed = 31;
-	std::mt19937 generator (seed2);
+	std::mt19937 generator((unsigned int)time(NULL));
 	std::uniform_real_distribution<double> distribution(0.0,1.0);
     char* opts = new char [L];
     for(int j = 0; j < L; ++j)
-        //opts[L-j-1] = distribution(generator)>0.5 ? 'L' : 'H';
-        opts[L-j-1] = 'L';
+        opts[L-j-1] = distribution(generator) > epsilon ? 'L' : 'H';
+        //opts[L-j-1] = 'L';
 
 
 	sdMERA sdM;
-	sdM.setMaxBondDim(40);
+	sdM.setMaxBondDim(100);
 	sdM.setWJ(WJ);
 	sdM.setWh(Wh);
 	sdM.setRandomSeed(seed);
-	sdM.setMaxSearchLength(1,4);
+	sdM.setMaxSearchLength(4,4);
 	sdM.setInitialMPO(L,pD,bD, uniform);
     sdM.setOpts(opts);
 
@@ -84,7 +84,7 @@ void Abidtest(double W, int L, unsigned seed, unsigned seed2)
     psi.RC();
     double E = psiHphi(psi,h,psi);
     double SE = psiHphi(psi,hS,psi);
-    cout<<"MPS Info: "<<E<<" "<<SE-E*E;
+    cout<<"MPS Info: "<<E<<" "<<SE-E*E<<" ";
     psi.EE();
 
     /*
@@ -103,8 +103,10 @@ int main (int argc, char const *argv[])
 	double      W  = argc>1 ? atof(argv[1]) : 0;
     int         L  = argc>2 ? atof(argv[2]) : 32;
     unsigned seed  = argc>3 ? atof(argv[3]) : (unsigned int)time(NULL);
-    unsigned seed2 = argc>4 ? atof(argv[4]) : (unsigned int)time(NULL);
-    //cout<<"W = "<<W<<endl;
-    Abidtest(W, L, seed, seed2);
+    double n          = argc>4 ? atof(argv[4]) : 0;
+    double N          = argc>5 ? atof(argv[5]) : 1;
+    double epsilon =  n/N;
+    cout<<"epsilon = "<<epsilon<<endl;
+    Abidtest(W, L, seed, epsilon);
 	return 0;
 }
