@@ -1,20 +1,20 @@
 #!/bin/bash
 source /opt/intel/bin/compilervars.sh intel64
 
-L=128
-dseed=31
+d="../data"
+
+L=64
+
+Ld="${d}/L_${L}"
+mkdir -p ${Ld}
 
 W=${1}
-#for W in `seq 1 10`
-#do
-d="data/L_${L}_variance/W_${W}"
-mkdir -p ${d}
-echo $d
-
-echo "W=${W}"
-for seed in $(seq -f "%02g" 0 99)
+for dseed in $(seq -f "%02g" 0 99)
 do
-    echo "   ds=${dseed}   s=${seed}"
-    OMP_NUM_THREADS=1 ./run $W $L ${dseed} ${seed} > $d/W_${W}_${seed}.txt
+    Wd="${Ld}/W_${W}"
+    mkdir -p ${Wd}
+    for n in $(seq -f "%02g" 0 $L)
+    do
+        OMP_NUM_THREADS=1 ./run $W $L ${dseed} ${n} $L > "${Wd}/epsilon_${n}_${dseed}.txt"
+    done
 done
-#done

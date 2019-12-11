@@ -301,18 +301,18 @@ void sdMERA::unitaryDecimateMPO(char opt)
 	if(L>1)
 	{
 
-        /*
-        if(L<6)
+        
+        if(L<4)
         {
             Eigen::SelfAdjointEigenSolver<Mxd> es(A);
             if (es.info() != Eigen::Success) abort();
-            std::cout<<L<<"\t";
+            std::cout<<"Energies "<<L<<"\t";
 		    Mxd evls = es.eigenvalues();
             for(int k = 0; k < std::pow(pD,L); k++)
                 std::cout<<evls(k)<<"\t";
             std::cout<<std::endl;
         }
-        */
+        
 
 
         //cout<<"applying gates"<<endl;
