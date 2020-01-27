@@ -36,7 +36,7 @@ typedef Eigen::MatrixXd Mxd;
 #include "tauSolver.h"
 
 
-void Abidtest(double W, int L, unsigned seed, double epsilon)
+void Abidtest(double W, int L, int l, unsigned seed, double epsilon)
 {
     bool uniform = false;
 	int pD = 2;
@@ -44,13 +44,13 @@ void Abidtest(double W, int L, unsigned seed, double epsilon)
 	double WJ = 0;
 	double Wh = W;
 
-    //unsigned seed = 31;
-	std::mt19937 generator((unsigned int)time(NULL));
+	std::mt19937 generator(seed);
 	std::uniform_real_distribution<double> distribution(0.0,1.0);
     char* opts = new char [L];
     for(int j = 0; j < L; ++j)
+    {
         opts[L-j-1] = distribution(generator) > epsilon ? 'L' : 'H';
-        //opts[L-j-1] = 'L';
+    }
 
 
 	sdMERA sdM;
@@ -58,7 +58,7 @@ void Abidtest(double W, int L, unsigned seed, double epsilon)
 	sdM.setWJ(WJ);
 	sdM.setWh(Wh);
 	sdM.setRandomSeed(seed);
-	sdM.setMaxSearchLength(4,4);
+	sdM.setMaxSearchLength(l,l);
 	sdM.setInitialMPO(L,pD,bD, uniform);
     sdM.setOpts(opts);
 
@@ -73,6 +73,10 @@ void Abidtest(double W, int L, unsigned seed, double epsilon)
     hS.buildHeisenberg(&(sdM.dJ[0]), &(sdM.dh[0]));
     hS.square();
 
+    MPO Sz;
+    Sz.setMPO(L, pD, bD, 0);
+    Sz.buildSz(L/2);
+
 	cout<<"st\top\ted\tphy"<<endl;
     for(int i = 0; i < L; i++)
     {
@@ -82,10 +86,14 @@ void Abidtest(double W, int L, unsigned seed, double epsilon)
     MPS psi;
     sdM.buildMPS(psi);
     psi.RC();
+
     double E = psiHphi(psi,h,psi);
     double SE = psiHphi(psi,hS,psi);
+    double sz = psiHphi(psi, Sz, psi);
+
     cout<<"MPS Info: "<<E<<" "<<SE-E*E<<" ";
     psi.EE();
+    cout<<" "<<sz<<endl;
 
     /*
     if(sdM.good_RG_flow)
@@ -100,13 +108,15 @@ void Abidtest(double W, int L, unsigned seed, double epsilon)
 
 int main (int argc, char const *argv[])
 {
-	double      W  = argc>1 ? atof(argv[1]) : 0;
-    int         L  = argc>2 ? atof(argv[2]) : 32;
-    unsigned seed  = argc>3 ? atof(argv[3]) : (unsigned int)time(NULL);
-    double n          = argc>4 ? atof(argv[4]) : 0;
-    double N          = argc>5 ? atof(argv[5]) : 1;
+	double       W = argc>1 ? atof(argv[1]) : 0;
+    int          L = argc>2 ? atof(argv[2]) : 32;
+    int          l = argc>3 ? atof(argv[3]) : 4;
+    unsigned  seed = argc>4 ? atof(argv[4]) : 0;
+    double       n = argc>5 ? atof(argv[5]) : 0;
+    double       N = argc>6 ? atof(argv[6]) : 1;
+
     double epsilon =  n/N;
     cout<<"epsilon = "<<epsilon<<endl;
-    Abidtest(W, L, seed, epsilon);
+    Abidtest(W, L, l, seed, epsilon);
 	return 0;
 }

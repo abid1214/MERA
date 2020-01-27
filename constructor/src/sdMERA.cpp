@@ -29,6 +29,7 @@ void sdMERA::setRandomSeed(int t)
 
 void sdMERA::setDisorderConfig(bool uniform)
 {
+    double h;
 	srand48(137*randSeed);
 	dJ.clear();
 	dh.clear();
@@ -40,11 +41,15 @@ void sdMERA::setDisorderConfig(bool uniform)
         }
     }
     else {
+        cout<<"W_LIST: ";
         for(int i = 0; i < L; ++i)
         {
             dJ.push_back(2*WJ*(drand48()-0.5));
-            dh.push_back(2*Wh*(drand48()-0.5));
+            h = 2*Wh*(drand48()-0.5);
+            cout << h << " "; 
+            dh.push_back(h);
         }
+        cout<<endl;
     }
 	
 }
@@ -102,9 +107,9 @@ void sdMERA::addContractedSite(int site_st, int site_op, int site_ed, int phy, i
 	bool id_g = is_indentity(A);
 	//std::cout<<"Unitary gate is identity = "<<id_g<<std::endl;
 	if(id_g)
-		std::cout<<site_op<<"\t"<<site_op<<"\t"<<site_op<<"\t"<<phy<<std::endl;
+		std::cout<<"SITE: "<<site_op<<"\t"<<site_op<<"\t"<<site_op<<"\t"<<phy<<std::endl;
 	else
-		std::cout<<site_st<<"\t"<<site_op<<"\t"<<site_ed<<"\t"<<phy<<std::endl;
+		std::cout<<"SITE: "<<site_st<<"\t"<<site_op<<"\t"<<site_ed<<"\t"<<phy<<std::endl;
 }
 
 void sdMERA::buildMPS(MPS& psi)
@@ -302,7 +307,7 @@ void sdMERA::unitaryDecimateMPO(char opt)
 	{
 
         
-        if(L<4)
+        if(L<6)
         {
             Eigen::SelfAdjointEigenSolver<Mxd> es(A);
             if (es.info() != Eigen::Success) abort();
