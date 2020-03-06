@@ -1,0 +1,45 @@
+#!/bin/bash
+#PBS -V
+#PBS -l nodes=1:ppn=16
+#PBS -q secondary
+#PBS -l walltime=4:00:00
+
+cd $PBS_O_WORKDIR
+module load intel/18.0
+
+lockdir="L_${L}_l_${l}.lock"
+lock () { mkdir $lockdir; }
+unlock () { rm -rf $lockdir; }
+
+read_files () {
+    while [ -s $input ]
+    do
+        if lock
+        then
+            arr=($(head -1 $input))
+            sed -i '1d' $input
+            unlock
+
+            W=${arr[0]}
+            dis=${arr[1]}
+            e=${arr[2]}
+
+            Wd="${d}/L_${L}_l_${l}/W_${W}"
+            mkdir -p ${Wd}
+            x=$(printf %02g $e)
+            y=$(printf %02g $dis)
+            fn="${Wd}/epsilon_${x}_${y}.txt"
+
+            echo "./run $W $L $l ${dis} ${e} $N > $fn"
+            OMP_NUM_THREADS=1 ./run $W $L $l ${dis} ${e} $N > $fn
+        else
+            sleep 1
+        fi
+    done
+}
+
+for (( i=1; i<=16; i++))
+do
+    read_files &
+done
+wait
