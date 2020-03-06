@@ -532,6 +532,27 @@ void MPO::buildHeisenberg(double* J, double* h)
 	M[Len-1][3]<<1,0,0,-.5,-.5*h[Len-1];
 }
 
+void MPO::buildIsing(double* J, double* h, double* Jp)
+{
+	setZero("Square");
+	
+	M[0][0]<<h[0],0,Jp[0],1;
+	M[0][1]<<0,J[0],0,0;
+	M[0][2]<<0,J[0],0,0;
+	M[0][3]<<-h[0],0,-Jp[0],1;
+	for(int i = 1; i < Len-1; i++)
+	{
+		M[i][0]<<1,0,0,0,  0,0,0,0,  1,0,0,0,   h[i],0,Jp[i],1;
+		M[i][1]<<0,0,0,0,  1,0,0,0,  0,0,0,0,   0,J[i],0,0;
+		M[i][2]<<0,0,0,0,  1,0,0,0,  0,0,0,0,   0,J[i],0,0;
+		M[i][3]<<1,0,0,0,  0,0,0,0, -1,0,0,0,  -h[i],0,-Jp[i],1;
+	}
+	M[Len-1][0]<<1,0,1,h[Len-1];
+	M[Len-1][1]<<0,1,0,0;
+	M[Len-1][2]<<0,1,0,0;
+	M[Len-1][3]<<1,0,-1,-h[Len-1];
+}
+
 void MPO::buildRTIC(double* dJ, double* dh)
 {
 	norm = 1;

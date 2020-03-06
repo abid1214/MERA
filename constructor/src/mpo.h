@@ -50,6 +50,7 @@ public:
 	void diagToMPS(MPS& psi);
 	
 	void buildHeisenberg(double* dJ, double* dh);
+    void buildIsing(double* J, double* h, double* Jp);
 	void buildRTIC(double* dJ, double* dh);
 	void buildSPTC(double* dJ, double* dh);
 	void buildSz(int site);
