@@ -1,5 +1,5 @@
-CC = /opt/intel/bin/icpc
-CC_FLAGS = -I/usr/local/lib/eigen/ -I/usr/include/hdf5/serial/ -L/usr/lib/x86_64-linux-gnu/hdf5/serial/ -L/opt/intel/intelpython3/lib/ -lhdf5 -qopenmp -parallel  -mkl=parallel -std=c++11 -O3 -xhost -DUse_Indef -DUse_MKL -DNDEBUG -W
+CC = icpc
+CC_FLAGS = -I/home/aakhan3/eigen -I/usr/include/hdf5 -lhdf5 -qopenmp -parallel  -mkl=parallel -std=c++11 -O3 -xhost -DUse_Indef -DUse_MKL -DNDEBUG -W
 
 # File names
 EXEC = run

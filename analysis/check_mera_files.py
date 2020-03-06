@@ -15,7 +15,7 @@ def load_diagnostics(fname):
     with open(fname, 'r') as fp:
         data = fp.readlines()
         assert len(data) > 10, "lines in file = {}".format(len(data))
-        energies = np.array(data[-10].split()[2:]).astype(float)
+        energies = np.array(data[-4].split()[2:]).astype(float)
         e_diffs = energies[1:] - energies[:-1]
         spacings = [min(e_diffs[i:i+2])/max(e_diffs[i:i+2]) for i in range(len(e_diffs)-2)]
         ll = data[-1].split()
