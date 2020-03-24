@@ -1,0 +1,19 @@
+#!/bin/bash
+#PBS -V
+#PBS -l nodes=1:ppn=1
+#PBS -q normal
+#PBS -l walltime=7:00:00
+
+cd $PBS_O_WORKDIR
+module load intel/17.0.4.196
+module load cray-hdf5
+
+export OMP_NUM_THREADS=1
+for W in 0.0001 1 2 3 4 5 6 7 8 9 10
+do
+    d="../data/L_${L}/W_${W}"
+    mkdir -p ${d}
+    savefile="${d}/epsilon_${ENERGY}_${SEED}.txt"
+
+    aprun -d 1 -n 1 ./run $W $L $SEED $ENERGY $NUMENERGIES > $savefile
+done
