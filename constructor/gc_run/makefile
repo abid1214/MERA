@@ -1,9 +1,9 @@
 CC = /opt/intel/bin/icpc
-CC_FLAGS = -I/media/bkcgroup/Install/eigen-eigen-dc6cfdf9bcec/ -I/usr/include/hdf5/serial/ -L/usr/lib/x86_64-linux-gnu/hdf5/serial/ -lhdf5 -qopenmp -parallel  -mkl=parallel -std=c++11 -O3 -xhost -DUse_Indef -DUse_MKL -DNDEBUG -W 
+CC_FLAGS = -I/media/HomeData/aakhan3/scratch/eigen -I/usr/include/hdf5/serial/ -L/usr/lib/x86_64-linux-gnu/hdf5/serial/ -lhdf5 -qopenmp -parallel  -mkl=parallel -std=c++11 -O3 -xhost -DUse_Indef -DUse_MKL -DNDEBUG -W 
 
 # File names
 EXEC = run
-SOURCES = $(wildcard ./src/*.cpp)
+SOURCES = $(wildcard ../src/*.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 
 # Main target
