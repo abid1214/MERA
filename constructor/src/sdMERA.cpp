@@ -158,7 +158,7 @@ void sdMERA::findMaxGap()
 	Mxd A;
 	while(slen<=max_search_L&&slen<=H.Len)
 	{
-		for(int i = 0; i < L+1-slen; ++i)
+		for(int i = 0; i < L-(slen-1); ++i)
 		{
 			effH(H,i,slen,A);
 			
@@ -242,18 +242,26 @@ void sdMERA::unitaryDecimateMPO(char opt)
 	findMaxGap();
 	
 	int pos = max_gap_site;
-	int tpL = max_gap_L;
-	
+    int U_start = max_gap_site;
+    int U_L = max_gap_L;
+    int start = 0;
+    if (max_gap_site>0)
+    {
+        start += 1;
+        U_start -= 1;
+        U_L += 1;
+    }
+    if ((max_gap_site+max_gap_L)<L)
+        U_L += 1;
+        
 	Mxd A,U,D;
     //cout<<"calculating effective hamiltonian"<<std::endl;
-	effH(H,max_gap_site,max_gap_L,A);
+    effH(H,U_start,U_L,A);
 	bool perm_found = false;
 	double Init_Tol = 1e-5;
 	double Init_Tau = 1e-4;
 
     //cout<<"performing Wegner flow"<<endl;
-    
-    
 	while(!perm_found)
 	{
 		WegnerDiagonalize WD;
@@ -264,12 +272,6 @@ void sdMERA::unitaryDecimateMPO(char opt)
 		Init_Tol /= 1.1;
 		Init_Tau *= 1.1;
 	}
-    
-    
-
-	//Eigen::SelfAdjointEigenSolver<Mxd> es(A);
-    //U = es.eigenvectors();
-
 	D = (U.transpose() * A * U).diagonal();
 	
 	// Which index to fix?
@@ -279,10 +281,11 @@ void sdMERA::unitaryDecimateMPO(char opt)
 	double sum=9999;
 	
 	//cout<<"Looking for the bond to decimate"<<std::endl;
-	for(int i = 0; i < max_gap_L; ++i)
+    
+	for(int i = start; i < start + max_gap_L; ++i)
 	{
 		std::vector<double> tp(pD);
-		for(int j = 0; j < std::pow(pD,max_gap_L); ++j)
+		for(int j = 0; j < std::pow(pD,U_L); ++j)
 		{
 			tp[int(j/std::pow(pD,i))%pD] += D(j);
 		}
@@ -295,47 +298,23 @@ void sdMERA::unitaryDecimateMPO(char opt)
 	}
 	
     int opt_phy = opt=='L' ? phy : 1 - phy;
-	addContractedSite(H.M_IDs[max_gap_site],H.M_IDs[idx+max_gap_site],H.M_IDs[max_gap_L+max_gap_site-1],opt_phy,max_gap_L,idx,U);
+	addContractedSite(H.M_IDs[U_start],H.M_IDs[idx+U_start],H.M_IDs[U_L+U_start-1],opt_phy,U_L,idx,U);
 	//std::cout<<"Fixing site "<<H.M_IDs[idx+max_gap_site]<<" to "<<opt_phy<<std::endl;
 	
     //cout<<"getting tau bits"<<endl;
 	D = U.transpose() * A * U;
-	double leading_energy = getTauBits(D, max_gap_L, idx);
-	getTauBits(D, max_gap_L);
+
+	double leading_energy = getTauBits(D, U_L, idx);
+	getTauBits(D, U_L);
 	
 	if(L>1)
 	{
 
-        
-        if(L<6)
-        {
-            Eigen::SelfAdjointEigenSolver<Mxd> es(A);
-            if (es.info() != Eigen::Success) abort();
-            std::cout<<"Energies "<<L<<"\t";
-		    Mxd evls = es.eigenvalues();
-            for(int k = 0; k < std::pow(pD,L); k++)
-                std::cout<<evls(k)<<"\t";
-            std::cout<<std::endl;
-        }
-        
-
-
         //cout<<"applying gates"<<endl;
-		applyGates(U, H, max_gap_site, max_gap_L, max_bD);
-		int idx_new = idx;
-		if(max_gap_site-1>=0)
-		{
-			pos -= 1;
-			tpL += 1;
-			idx_new += 1;
-		}
-		if(max_gap_site+max_gap_L<L)
-		{
-			tpL += 1;
-		}
+		applyGates(U, H, U_start, U_L, max_bD);
 
         //cout<<"calculating Heff"<<endl;
-		effH(H,pos,tpL,A);
+		effH(H,U_start,U_L,A);
 		double g_factor = -99999;
 		int idx_i=0, idx_j=0;
 		for(int i = 0; i < A.rows(); ++i)
@@ -351,7 +330,7 @@ void sdMERA::unitaryDecimateMPO(char opt)
                 }
 			}
 		}
-		//std::cout<<"Max g factor = "<<g_factor<<" "<<A(idx_i,idx_i)<<" "<<A(idx_j,idx_j)<<std::endl;
+		std::cout<<"Max g factor = "<<g_factor<<" "<<A(idx_i,idx_i)<<" "<<A(idx_j,idx_j)<<std::endl;
 		if(g_factor>0) good_RG_flow = false;
 		g_factors.push_back(g_factor);
 
@@ -365,14 +344,11 @@ void sdMERA::unitaryDecimateMPO(char opt)
 		    double d2 = std::abs(evls(i+1)-evls(i+2));
 		    mean_gap_ratio += std::min(d1,d2)/std::max(d1,d2);
 		  }
-		//if(evls.size()-2>0) std::cout<<"MGapRatio = "<<mean_gap_ratio/(evls.size()-2)<<std::endl;
+		if(evls.size()-2>0) std::cout<<"MGapRatio = "<<mean_gap_ratio/(evls.size()-2)<<std::endl;
 		
         //std::cout<<"decimating Hamiltonian"<<endl;
 		MPO HH(L-1,pD,bD,0);
-		if(opt=='L')
-			HH.decimateCopy(H, max_gap_site+idx, phy);
-		else
-			HH.decimateCopy(H, max_gap_site+idx, 1-phy);
+		HH.decimateCopy(H, U_start+idx, opt_phy);
 		H.clearMPO();
 		H.copyMPO(HH);
 	}else
