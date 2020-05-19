@@ -57,7 +57,7 @@ void sdMERA::setDisorderConfig(bool uniform)
 void sdMERA::setMaxSearchLength(int st, int maxLen)
 {
 	stLen = st;
-	max_search_L = maxLen;
+	max_search_L = maxLen-2;
 }
 
 void sdMERA::setOpts(char* _opts)
