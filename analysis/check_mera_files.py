@@ -1,11 +1,14 @@
 import numpy as np
 from sys import argv
+from os.path import exists
 
 def get_mera_fname(W, e, dis):
     data_dir = "../data/L_{}_l_{}/".format(L, l)
     return "{}W_{}/epsilon_{:02}_{:02}.txt".format(data_dir, W, e, dis)
 
 def check_last_line(fname):
+    if not exists(fname):
+        return False, "file doesn't exist"
     with open(fname, 'r') as fp:
         data = fp.readlines()
         if len(data) == 0:
@@ -20,7 +23,8 @@ if __name__ == "__main__":
     L = int(argv[1])
     l = int(argv[2])
 
-    W_list = [0.0001] + list(range(1,11))
+    #W_list = [0.0001] + list(range(1,11))
+    W_list = [0.33, 0.66, 1.33, 1.66, 2.33, 2.66, 3.33, 3.66, 4.33, 4.66, 5.33]
     num_W = len(W_list)
     num_dis = 100
     num_energies = 11
