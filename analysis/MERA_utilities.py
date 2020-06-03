@@ -1,55 +1,55 @@
 import numpy as np
 from scipy.signal import convolve2d
 
-E_IDX, VAR_IDX, LOGVAR_IDX, EE_IDX, R_IDX, SZ_IDX, EP_MERA_IDX, EP_DMRG_IDX, \
-        W_IDX, DIS_IDX, EP_IDX, L_IDX, LL_IDX = list(range(13))
+E_IDX, VAR_IDX, LOGVAR_IDX, EE_IDX, SZ_IDX, EP_MERA_IDX, EP_DMRG_IDX, \
+        W_IDX, DIS_IDX, EP_IDX, L_IDX, LL_IDX = list(range(12))
 
-def get_mera_fname(L, l, W, e, dis):
+def get_mera_fname(L, l, W, e, dis, data_dir=None):
     ''' grabs the file name for MERA config (L, l, W, e, dis) '''
-    data_dir = "../data/L_{}_l_{}/".format(L, l)
+    if not data_dir:
+        data_dir = "../data/"
+    data_dir += "L_{}_l_{}/".format(L, l)
     return "{}W_{}/epsilon_{:02}_{:02}.txt".format(data_dir, W, e, dis)
 
 
-def get_dmrg_fname(L, W, dis):
+def get_dmrg_fname(L, W, dis, data_dir=None):
     ''' grabs the file name for DMRG config (L, W, dis) '''
-    data_dir = "../data/dmrg/L_{}/".format(L)
+    if not data_dir:
+        data_dir = "../data/"
+    data_dir += "dmrg/L_{}/".format(L)
     return "{}W_{}/epsilon_{:02}.txt".format(data_dir, W, dis)
 
 
-def load_diagnostics(L, l, W, e, dis):
+def load_diagnostics(L, l, W, e, dis, data_dir):
     ''' loads MERA config (L, l, W, e, dis) data '''
-    fname = get_mera_fname(L, l, W, e, dis)
+    fname = get_mera_fname(L, l, W, e, dis, data_dir)
     with open(fname, 'r') as fp:
         data = fp.readlines()
-        energies = np.array(data[-4].split()[2:]).astype(float)
-        e_diffs = energies[1:] - energies[:-1]
-        r = np.mean([min(e_diffs[i:i+2])/max(e_diffs[i:i+2]) for i in \
-                range(len(e_diffs)-2)])
         ll = data[-1].split()
         E, var, EE, Sz = [float(ll[i]) for i in range(2,6)]
-    return E, var, EE, r, Sz
+    return E, var, EE, Sz
 
 
-def get_dmrg_minmax_energies(L, W, dis):
+def get_dmrg_minmax_energies(L, W, dis, data_dir):
     ''' returns the min and max energies of a DMRG config (L, W, dis) '''
-    fname = get_dmrg_fname(L, W, dis)
+    fname = get_dmrg_fname(L, W, dis, data_dir)
     with open(fname, 'r') as fp:
         data = fp.readlines()[-1].split()
         return float(data[0]), float(data[1])
 
 
-def get_mera_minmax_energies(L, l, W, dis, num_energies):
+def get_mera_minmax_energies(L, l, W, dis, num_energies, data_dir):
     ''' returns the min and max energies of a MERA config (L, l, W, dis) '''
-    E_min, _,_,_,_ = load_diagnostics(L, l, W, 0, dis)
-    E_max, _,_,_,_ = load_diagnostics(L, l, W, num_energies-1, dis)
+    E_min, _,_,_ = load_diagnostics(L, l, W, 0, dis, data_dir)
+    E_max, _,_,_ = load_diagnostics(L, l, W, num_energies-1, dis, data_dir)
     return E_min, E_max
 
 
-def load_all_data(L_list, l_list, W_list, num_dis, num_energies):
+def load_all_data(L_list, l_list, W_list, num_dis, num_energies, data_dir=None):
     ''' gets MERA and DMRG data for all W, disorders and energies for a
         given (L, l)
     '''
-    num_L, num_l, num_W, num_params = len(L_list), len(l_list), len(W_list), 13
+    num_L, num_l, num_W, num_params = len(L_list), len(l_list), len(W_list), 12
     all_data = np.zeros((num_L, num_l, num_W, num_dis, num_energies, num_params))
     for L_idx, L in enumerate(L_list):
         for l_idx, l in enumerate(l_list):
@@ -57,15 +57,15 @@ def load_all_data(L_list, l_list, W_list, num_dis, num_energies):
             for W_idx, W in enumerate(W_list):
                 for dis in range(num_dis):
                     for e in range(num_energies):
-                        E, var, EE, r, Sz = load_diagnostics(L, l, W, e, dis)
-                        E_min_dmrg, E_max_dmrg = get_dmrg_minmax_energies(L, W, dis)
+                        E, var, EE, Sz = load_diagnostics(L, l, W, e, dis, data_dir)
+                        E_min_dmrg, E_max_dmrg = get_dmrg_minmax_energies(L, W, dis, data_dir)
                         E_min_mera, E_max_mera = get_mera_minmax_energies(L, l, W, \
-                                dis, num_energies)
+                                dis, num_energies, data_dir)
                         ep_mera = (E - E_min_mera)/(E_max_mera - E_min_mera)
                         ep_dmrg = (E - E_min_dmrg)/(E_max_dmrg - E_min_dmrg)
 
                         all_data[L_idx][l_idx][W_idx][dis][e][:] = \
-                                np.array([E, var, np.log10(var), EE, r, Sz, ep_mera, \
+                                np.array([E, var, np.log10(var), EE, Sz, ep_mera, \
                                 ep_dmrg, W, dis, e/(num_energies - 1), L, l])
     return all_data
 
