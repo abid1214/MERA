@@ -23,11 +23,8 @@ if __name__ == "__main__":
     L = int(argv[1])
     l = int(argv[2])
 
-<<<<<<< Updated upstream
-    #W_list = [0.0001] + list(range(1,11))
-=======
->>>>>>> Stashed changes
-    W_list = [0.33, 0.66, 1.33, 1.66, 2.33, 2.66, 3.33, 3.66, 4.33, 4.66, 5.33]
+    W_list = [0.0001] + list(range(1,11))
+    W_list += [0.33, 0.66, 1.33, 1.66, 2.33, 2.66, 3.33, 3.66, 4.33, 4.66, 5.33]
     num_W = len(W_list)
     num_dis = 100
     num_energies = 11
