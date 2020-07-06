@@ -49,7 +49,7 @@ public:
 	void writeMPS(std::string filename, int preci);
 	void readMPS(std::string filename);
 	
-	void EE();
+	void EE(bool verbose);
 	double norm();
 };
 

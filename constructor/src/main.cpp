@@ -91,9 +91,17 @@ void Abidtest(double W, int L, int l, unsigned seed, double epsilon)
     double SE = psiHphi(psi,hS,psi);
     double sz = psiHphi(psi, Sz, psi);
 
+    psi.EE(true);
+    cout<<endl;
+
     cout<<"MPS Info: "<<E<<" "<<SE-E*E<<" ";
-    psi.EE();
+    psi.EE(false);
     cout<<" "<<sz<<endl;
+
+    char fname [50];
+    sprintf(fname, "mps_W_%2.4f_L_%d_l_%d_d_%d_e_%0.2f.txt", W, L, l, seed, epsilon);
+    psi.writeMPS(fname, 10);
+    
 
     /*
     if(sdM.good_RG_flow)

@@ -680,7 +680,7 @@ void MPS::writeMPS(std::string filename, int preci)
 	std::cout<<"Writing MPS done!"<<std::endl;
 }
 
-void MPS::EE()
+void MPS::EE(bool verbose)
 {
 	if(!if_init)
 	{
@@ -716,7 +716,8 @@ void MPS::EE()
 			if(sv[j]>0) EEn -= sv[j]*sv[j]*log(sv[j]*sv[j]); 
 		}
 		
-		if(i==(Len/2-1)) std::cout<<EEn<<" ";
+		if(i==(Len/2-1) && !verbose) std::cout<<EEn<<" ";
+        if(verbose) std::cout<<EEn<<" ";
 		
 		for(tid = 0; tid < pD; tid++)
 		{
