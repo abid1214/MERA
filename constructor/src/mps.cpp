@@ -4,8 +4,8 @@
 
 #include "mps.h"
 #include "lapack_wrapper.h"
+#include <cmath>
 
-// using Eigen::MatrixXd;
 
 typedef Eigen::MatrixXd Mxd;
 
@@ -784,5 +784,93 @@ double MPS::norm()
 	return std::abs(nm);
 }
 
+
+Mxd MPS::evaluateMPS(int N)
+{
+    int i = N%2;
+    N /= 2;
+    Mxd MT = M[0][i];
+    for(int site=1; site<Len; site++)
+    {
+        i  = N%2;
+        N /= 2;
+        MT *= M[site][i];
+    }
+    return MT;
+}
+
+
+Mxd MPS::partial_trace(int pos, int l){
+    if(!if_init)
+	{
+		std::cout<<"MPS not initiated!"<<std::endl;
+		abort();
+	}
+    if(pos+l>Len)
+    {
+		std::cout<<"out of bounds error"<<std::endl;
+        abort();
+    }
+
+    // matrix is of form M-M-M-M-M-M-M
+    //                   | | | | | | |
+
+    int N = std::pow(pD,l);
+    Mxd rhoA(N,N);
+
+    // LC to have        Q-Q-M-M-M-M-M
+    //                   | | | | | | |
+    for(int i=0; i<pos; i++)
+        moveRight(i);
+
+    // RC to have        Q-Q-M-M-Q-Q-Q
+    //                   | | | | | | |
+    for(int i=Len-1; i>=pos+l; i--)
+        moveLeft(i);
+
+
+    // psi_A is             -M-M-     
+    //                       | |      
+    MPS psi_A = MPS(l, pD, bD);
+    for (int i=0; i<l; i++)
+        for (int tid=0; tid<pD; tid++)
+        {
+            psi_A.M[i][tid] = M[pos+i][tid];
+        }
+        
+
+
+    // loop over indices to get rho
+    //                      -M-M-    
+    //                    /  | |  \
+    //                    |  i j  |     
+    //                    |       |    
+    //                    |  k l  |     
+    //                    \  | |  /     
+    //                      -M-M-     
+    /*
+    double n=0;
+    for(int a=0; a<N; a++)
+    {
+        Mxd t = evaluateMPS(a);
+        n += (t*(t.transpose())).trace();
+    }
+    std::cout<<"norm = "<<n<<std::endl;
+    */
+
+    double t;
+    double tol = 1e-8/(N*N);
+    for(int a=0; a<N; a++)
+        for(int b=0; b<N; b++)
+        {
+            Mxd tmpA = psi_A.evaluateMPS(a);
+            Mxd tmpB = psi_A.evaluateMPS(b);
+
+            t = (tmpA*(tmpB.transpose())).trace();
+            rhoA(a,b) = abs(t) < tol ? 0 : t;
+        }
+	
+    return rhoA;
+}
 
 #endif

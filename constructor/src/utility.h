@@ -15,6 +15,7 @@
 
 typedef Eigen::MatrixXd Mxd;
 
+double MPS_partial_overlap(MPS psi, MPS phi, unsigned site, unsigned l);
 
 // B = A1 cross A2
 void KroneckerProd(Mxd& A1, Mxd& A2, Mxd& B);

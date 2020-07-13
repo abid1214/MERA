@@ -51,6 +51,8 @@ public:
 	
 	void EE(bool verbose);
 	double norm();
+    Mxd evaluateMPS(int N);
+    Mxd partial_trace(int pos, int l);
 };
 
 #endif
