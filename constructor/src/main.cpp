@@ -117,33 +117,14 @@ void Abidtest(double W, int L, int l, unsigned seed, double epsilon)
     */
 }
 
-double overlap(string data_dir, double W, int L, int l, unsigned seed, double epsilon, int site, int len)
+MPS load_mps(string data_dir, double W, int L, int l, unsigned seed, double epsilon)
 {
-    char fname [50];
-    sprintf(fname, "mps_W_%2.4f_L_%d_l_%d_d_%d_e_%0.2f.txt", W, L, l, seed, epsilon);
-    char f1 [150];
-    char f2 [150];
-    sprintf(f1, "%sMPS_orig/%s", data_dir.c_str(), fname);
-    sprintf(f2, "%sMPS_last_bit_flip/%s", data_dir.c_str(), fname);
-
-    MPS psi, phi;
-    psi.readMPS(f1);
-    phi.readMPS(f2);
-
-    return MPS_partial_overlap(psi, phi, site, len);
-}
-
-
-void mps_load(string filename, unsigned l)
-{
+    char fname [150];
+    sprintf(fname, "%smps_W_%2.4f_L_%d_l_%d_d_%d_e_%0.2f.txt", data_dir.c_str(), W, L, l, seed, epsilon);
     MPS psi;
-    psi.readMPS(filename);
-    Mxd rhoA = psi.partial_trace(1, l);
-    cout<<rhoA<<endl;
-    //cout<<(rhoA*rhoA).trace()<<endl;
-
+    psi.readMPS(fname);
+    return psi;
 }
-
 
 int main (int argc, char const *argv[])
 {
@@ -158,10 +139,21 @@ int main (int argc, char const *argv[])
     //cout<<"epsilon = "<<epsilon<<endl;
     //Abidtest(W, L, l, seed, epsilon);
 
-    double       site = argc>7 ? atof(argv[7]) : 0;
-    double       len  = argc>8 ? atof(argv[8]) : 1;
-    string data_dir = "/home/aakhan3/scratch/MERA/data/flip_data/";
-    double o = overlap(data_dir, W, L, l, seed, epsilon, site, len);
-    cout<<o<<endl;
+    string data_dir1 = "/home/aakhan3/scratch/MERA/data/flip_data/MPS_orig/";
+    string data_dir2 = "/home/aakhan3/scratch/MERA/data/flip_data/MPS_last_bit_flip/";
+    string data_dir3 = "/home/aakhan3/scratch/MERA/data/flip_data/MPS_last_lbit_flip/";
+
+    MPS psi = load_mps(data_dir1, W, L, l, seed, epsilon);
+    MPS phi = load_mps(data_dir3, W, L, l, seed, epsilon);
+    cout<<psiphi(psi, phi)<<endl;
+
+    char fname [50];
+    sprintf(fname, "overlapl_W_%2.4f_L_%d_l_%d_d_%d_e_%0.2f.txt", W, L, l, seed, epsilon);
+    ofstream fout;
+    fout.precision(8);
+    fout.open(fname);
+
+    for(int site=0; site<L; site++)
+        fout<<MPS_partial_overlap(psi, phi, site, 1)<<endl;
 	return 0;
 }
