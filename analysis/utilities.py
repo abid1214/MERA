@@ -1,8 +1,12 @@
 import numpy as np
 from scipy.signal import convolve2d
+from math import sqrt
+from scipy.interpolate import griddata
+import matplotlib.pyplot as plt
 
+NUM_PARAMS = 13
 E_IDX, VAR_IDX, LOGVAR_IDX, EE_IDX, SZ_IDX, EP_MERA_IDX, EP_DMRG_IDX, \
-        W_IDX, DIS_IDX, EP_IDX, L_IDX, LL_IDX = list(range(12))
+        EP_ERR_IDX, W_IDX, DIS_IDX, EP_IDX, L_IDX, LL_IDX = list(range(NUM_PARAMS))
 
 def get_mera_fname(L, l, W, e, dis, data_dir=None):
     ''' grabs the file name for MERA config (L, l, W, e, dis) '''
@@ -26,7 +30,10 @@ def load_diagnostics(L, l, W, e, dis, data_dir):
     with open(fname, 'r') as fp:
         data = fp.readlines()
         ll = data[-1].split()
-        E, var, EE, Sz = [float(ll[i]) for i in range(2,6)]
+        try:
+            E, var, EE, Sz = [float(ll[i]) for i in range(2,6)]
+        except Exception as e:
+            print("error with file {}: {}".format(fname, e))
     return E, var, EE, Sz
 
 
@@ -49,7 +56,7 @@ def load_all_data(L_list, l_list, W_list, num_dis, num_energies, data_dir=None):
     ''' gets MERA and DMRG data for all W, disorders and energies for a
         given (L, l)
     '''
-    num_L, num_l, num_W, num_params = len(L_list), len(l_list), len(W_list), 12
+    num_L, num_l, num_W, num_params = len(L_list), len(l_list), len(W_list), NUM_PARAMS
     all_data = np.zeros((num_L, num_l, num_W, num_dis, num_energies, num_params))
     for L_idx, L in enumerate(L_list):
         for l_idx, l in enumerate(l_list):
@@ -63,10 +70,11 @@ def load_all_data(L_list, l_list, W_list, num_dis, num_energies, data_dir=None):
                                 dis, num_energies, data_dir)
                         ep_mera = (E - E_min_mera)/(E_max_mera - E_min_mera)
                         ep_dmrg = (E - E_min_dmrg)/(E_max_dmrg - E_min_dmrg)
+                        ep_err  = np.sqrt(var)/(E_max_dmrg - E_min_dmrg)
 
                         all_data[L_idx][l_idx][W_idx][dis][e][:] = \
                                 np.array([E, var, np.log10(var), EE, Sz, ep_mera, \
-                                ep_dmrg, W, dis, e/(num_energies - 1), L, l])
+                                ep_dmrg, ep_err, W, dis, e/(num_energies - 1), L, l])
     return all_data
 
 
@@ -134,4 +142,39 @@ def smooth_data2d(arr, N=3):
     ''' smoothes 2d data '''
     return convolve2d(arr, np.ones((N,N))/(N*N), mode='valid')
 
+def get_2d_grid(all_data, PARAM_IDX, L_idx, l_idx, d=-1, Nx=500, Ny=500, maxW=10):
+    ''' constructs a 2D grid of some parameter determined by PARAM_IDX vs ep and W'''
+    _, _, num_W, num_dis, num_energies, num_params = all_data.shape
+    param_grid = np.zeros((Nx, Ny))
+    x_list = []
+    y_list = []
+    grid_x, grid_y = np.mgrid[0:maxW:Nx*1j, 0:1:Ny*1j]
+    dis_list = [d] if d>=0 else range(num_dis)
+    for dis in dis_list:
 
+        flattened_data = all_data[L_idx,l_idx,:,dis,:,:].reshape([num_W*num_energies, num_params])
+        pl = get_lists(flattened_data)
+
+        Wp_list     = pl[W_IDX]          #x
+        ep_list     = pl[EP_DMRG_IDX]    #y
+        param_list  = pl[PARAM_IDX]      #z
+
+
+        x_list     += list(Wp_list)
+        y_list     += list(ep_list)
+        param_grid += griddata(list(zip(Wp_list, ep_list)),  param_list, (grid_x, grid_y), 'linear')
+
+    param_grid /= len(dis_list)
+    return grid_x, grid_y, x_list, y_list, param_grid
+
+def plot2d(grid_x, grid_y, param_grid, title='', x_list=None, y_list=None, show_points=False, vmin=None, vmax=None):
+    '''plots a contour of a 2D array from get_2d_grid'''
+    #plt.imshow(param_grid.T, extent=(0,10,0,1), origin='lower', aspect='auto', vmin=vmin, vmax=vmax)
+    plt.contour(grid_x, grid_y, param_grid, 15, linewidths=0.5, colors='k', vmin=vmin, vmax=vmax)
+    plt.contourf(grid_x, grid_y, param_grid, 15, vmin=vmin, vmax=vmax)
+    if show_points:
+        plt.scatter(x_list, y_list, c='r', marker='o', s=5, zorder=10)
+    plt.ylabel(r"$\varepsilon$", rotation=0)
+    plt.xlabel("W")
+    plt.title(title)
+    plt.colorbar()

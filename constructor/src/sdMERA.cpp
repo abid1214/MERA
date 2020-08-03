@@ -179,6 +179,13 @@ void sdMERA::findMaxGap()
 	//std::cout<<"Max Gap = "<<max_gap<<", at Site "<<max_gap_site<<", length "<<max_gap_L<<std::endl;
 }
 
+void sdMERA::firstBlock()
+{
+    max_gap_site = (L > 1)? 1:0;
+    max_gap_L = (stLen > L) ?L : stLen;
+	//std::cout<<", at Site "<<max_gap_site<<", length "<<max_gap_L<<std::endl;
+}
+
 double sdMERA::getTauBits(Mxd& A, int& tpL, int& pos)
 {
 	MPO tH;
@@ -234,12 +241,12 @@ void sdMERA::getTauBits(Mxd& A, int& tpL)
 	}
 }
 
-void sdMERA::unitaryDecimateMPO(char opt)
+void sdMERA::unitaryDecimateMPO(char* opts)
 {
-	assert(opt=='L'||opt=='H');
 	
     //cout<<"finding max gap"<<std::endl;
-	findMaxGap();
+	//findMaxGap();
+	firstBlock();
 	
 	int pos = max_gap_site;
     int U_start = max_gap_site;
@@ -297,6 +304,7 @@ void sdMERA::unitaryDecimateMPO(char opt)
 		}
 	}
 	
+    char opt = opts[H.M_IDs[idx+U_start]];
     int opt_phy = opt=='L' ? phy : 1 - phy;
 	addContractedSite(H.M_IDs[U_start],H.M_IDs[idx+U_start],H.M_IDs[U_L+U_start-1],opt_phy,U_L,idx,U);
 	//std::cout<<"Fixing site "<<H.M_IDs[idx+max_gap_site]<<" to "<<opt_phy<<std::endl;

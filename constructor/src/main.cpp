@@ -48,9 +48,14 @@ void Abidtest(double W, int L, int l, unsigned seed, double epsilon)
 	std::uniform_real_distribution<double> distribution(0.0,1.0);
     char* opts = new char [L];
     for(int j = 0; j < L; ++j)
-    {
         opts[L-j-1] = distribution(generator) > epsilon ? 'L' : 'H';
-    }
+
+    //opts[L-1] = opts[L-1] == 'H' ? 'L' : 'H';
+    opts[L/2] = opts[L/2] == 'H' ? 'L' : 'H';
+
+    for(int j = 0; j < L; ++j)
+        cout<<opts[j];
+    cout<<endl;
 
 
 	sdMERA sdM;
@@ -67,9 +72,6 @@ void Abidtest(double W, int L, int l, unsigned seed, double epsilon)
     h.setMPO(L, pD, bD, 0);
     h.buildHeisenberg(&(sdM.dJ[0]), &(sdM.dh[0]));
 
-    Mxd Hmat;
-    effH(h, 0, L, Hmat);
-    cout<<Hmat<<endl;
 
     MPO hS;
     hS.clearMPO();
@@ -84,7 +86,7 @@ void Abidtest(double W, int L, int l, unsigned seed, double epsilon)
 	cout<<"st\top\ted\tphy"<<endl;
     for(int i = 0; i < L; i++)
     {
-        sdM.unitaryDecimateMPO(opts[i]);
+        sdM.unitaryDecimateMPO(opts);
     }
 
     MPS psi;
@@ -117,6 +119,8 @@ void Abidtest(double W, int L, int l, unsigned seed, double epsilon)
     */
 }
 
+
+
 MPS load_mps(string data_dir, double W, int L, int l, unsigned seed, double epsilon)
 {
     char fname [150];
@@ -136,15 +140,14 @@ int main (int argc, char const *argv[])
     double       N = argc>6 ? atof(argv[6]) : 1;
 
     double epsilon =  n/N;
-    //cout<<"epsilon = "<<epsilon<<endl;
     //Abidtest(W, L, l, seed, epsilon);
 
-    string data_dir1 = "/home/aakhan3/scratch/MERA/data/flip_data/MPS_orig/";
-    string data_dir2 = "/home/aakhan3/scratch/MERA/data/flip_data/MPS_last_bit_flip/";
+    string data_dir1 = "/home/abid/programs/MERA/constructor/orig/";
+    string data_dir2 = "/home/abid/programs/MERA/constructor/flip/";
     string data_dir3 = "/home/aakhan3/scratch/MERA/data/flip_data/MPS_last_lbit_flip/";
 
     MPS psi = load_mps(data_dir1, W, L, l, seed, epsilon);
-    MPS phi = load_mps(data_dir3, W, L, l, seed, epsilon);
+    MPS phi = load_mps(data_dir2, W, L, l, seed, epsilon);
     cout<<psiphi(psi, phi)<<endl;
 
     char fname [50];

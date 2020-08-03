@@ -5,9 +5,11 @@ import matplotlib.pyplot as plt
 class MERA:
 
     def _system_len(self, fname):
+        i = 0
         with open(fname) as f:
-            for i, l in enumerate(f):
-                pass
+            for line in f:
+                if "SITE:" in line:
+                    i += 1
         return i
 
     def _get_cut_list(self):
@@ -41,9 +43,10 @@ class MERA:
         fp.readline()
         i = 0
         for line in fp:
-            data = list(map(int, line.split()[:-1]))
-            U_list[i] = data
-            i += 1
+            if "SITE:" in line:
+                data = list(map(int, line.split()[1:-1]))
+                U_list[i] = data
+                i += 1
 
         # construct graph
         G = nx.DiGraph()

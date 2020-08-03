@@ -84,10 +84,12 @@ public:
 	
 	void setInitialMPO(int _L, int _pD, int _bD, bool uniform);
 	void findMaxGap();
+	void firstBlock();
 	double getTauBits(Mxd& A, int& tpL, int& pos);
 	void getTauBits(Mxd& A, int& tpL);
 	
-	void unitaryDecimateMPO(char opt);
+	void unitaryDecimateMPO(char* opts);
+    
 	
 	void renormalize();
 };
