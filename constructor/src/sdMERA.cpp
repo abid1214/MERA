@@ -245,8 +245,8 @@ void sdMERA::unitaryDecimateMPO(char* opts)
 {
 	
     //cout<<"finding max gap"<<std::endl;
-	//findMaxGap();
-	firstBlock();
+	findMaxGap();
+	//firstBlock();
 	
 	int pos = max_gap_site;
     int U_start = max_gap_site;

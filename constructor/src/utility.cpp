@@ -2,16 +2,24 @@
 #define My_UTILITY_FUNCTIONS
 
 #include "utility.h"
+#include <cmath>
 
 typedef Eigen::MatrixXd Mxd;
+using namespace std;
 
 double MPS_partial_overlap(MPS psi, MPS phi, unsigned site, unsigned l)
 {
     Mxd rhoA   = psi.partial_trace(site, l);
     Mxd sigmaA = phi.partial_trace(site, l);
-
-    return (rhoA*sigmaA).trace();
+    Mxd delta = rhoA - sigmaA;
+    Eigen::SelfAdjointEigenSolver<Mxd> es(delta);
+    double ret = 0;
+    for(int i=0; i<delta.rows(); i++)
+        ret += abs(es.eigenvalues()(i));
+    //return (rhoA*sigmaA).trace();
+    return .5*ret;
 }
+
 
 // B = A1 cross A2
 void KroneckerProd(Mxd& A1, Mxd& A2, Mxd& B)

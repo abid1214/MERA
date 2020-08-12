@@ -51,7 +51,7 @@ void Abidtest(double W, int L, int l, unsigned seed, double epsilon)
         opts[L-j-1] = distribution(generator) > epsilon ? 'L' : 'H';
 
     //opts[L-1] = opts[L-1] == 'H' ? 'L' : 'H';
-    opts[L/2] = opts[L/2] == 'H' ? 'L' : 'H';
+    //opts[L/2] = opts[L/2] == 'H' ? 'L' : 'H';
 
     for(int j = 0; j < L; ++j)
         cout<<opts[j];
@@ -119,8 +119,6 @@ void Abidtest(double W, int L, int l, unsigned seed, double epsilon)
     */
 }
 
-
-
 MPS load_mps(string data_dir, double W, int L, int l, unsigned seed, double epsilon)
 {
     char fname [150];
@@ -129,6 +127,91 @@ MPS load_mps(string data_dir, double W, int L, int l, unsigned seed, double epsi
     psi.readMPS(fname);
     return psi;
 }
+
+double mean(double a[], int n)
+{
+    double avg = 0;
+    for(int i=0; i<n; i++)
+        avg += a[i];
+    return avg/n;
+}
+
+void disorder_average_overlap(double W, int L, int l, double epsilon)
+{
+
+    int num_dis = 100;
+    double overlap_list [L][num_dis];
+    string data_dir1 = "/home/abid/programs/MERA/constructor/data/emera/";
+    string data_dir2 = "/home/abid/programs/MERA/constructor/data/fmera/";
+
+    for(int seed=0; seed<num_dis; seed++)
+    {
+        MPS psi = load_mps(data_dir1, W, L, l, seed, epsilon);
+        MPS phi = load_mps(data_dir2, W, L, l, seed, epsilon);
+        cout<<psiphi(psi, phi)<<endl;
+
+        for(int site=0; site<L; site++)
+            overlap_list[site][seed] = MPS_partial_overlap(psi, phi, site, 1);
+    }
+
+    char fname [50];
+    sprintf(fname, "dis_avg_overlap_W_%2.4f_L_%d_l_%d_e_%0.2f.txt", W, L, l,epsilon);
+    ofstream fout;
+    fout.precision(8);
+    fout.open(fname);
+    for(int site=0; site<L; site++)
+    {
+        sort(overlap_list[site], overlap_list[site]+num_dis);
+        double median = overlap_list[site][num_dis/2];
+        double avg = mean(overlap_list[site], num_dis);
+        fout<<avg<<endl;
+    }
+}
+
+void overlap_hist(double W, int L, int l, double epsilon, int site)
+{
+
+    int num_dis = 100;
+    string data_dir1 = "/home/abid/programs/MERA/constructor/data/orig/";
+    string data_dir2 = "/home/abid/programs/MERA/constructor/data/flip/";
+
+    char fname [50];
+    sprintf(fname, "hist_overlap_W_%2.4f_L_%d_l_%d_e_%0.2f_s_%d.txt", W, L, l,epsilon, site);
+    ofstream fout;
+    fout.precision(8);
+    fout.open(fname);
+
+    for(int seed=0; seed<num_dis; seed++)
+    {
+        MPS psi = load_mps(data_dir1, W, L, l, seed, epsilon);
+        MPS phi = load_mps(data_dir2, W, L, l, seed, epsilon);
+        fout<<MPS_partial_overlap(psi, phi, site, 1)<<endl;
+    }
+
+    
+}
+
+void single_overlap(double W, int L, int l, unsigned seed, double epsilon)
+{
+    string data_dir1 = "/home/abid/programs/MERA/constructor/data/orig/";
+    string data_dir2 = "/home/abid/programs/MERA/constructor/data/flip/";
+
+    MPS psi = load_mps(data_dir1, W, L, l, seed, epsilon);
+    MPS phi = load_mps(data_dir2, W, L, l, seed, epsilon);
+    cout<<psiphi(psi, phi)<<endl;
+
+    char fname [50];
+    sprintf(fname, "overlap_W_%2.4f_L_%d_l_%d_d_%d_e_%0.2f.txt", W, L, l, seed, epsilon);
+    ofstream fout;
+    fout.precision(8);
+    fout.open(fname);
+
+    for(int site=0; site<L; site++)
+        fout<<MPS_partial_overlap(psi, phi, site, 1)<<endl;
+}
+
+
+
 
 int main (int argc, char const *argv[])
 {
@@ -141,22 +224,9 @@ int main (int argc, char const *argv[])
 
     double epsilon =  n/N;
     //Abidtest(W, L, l, seed, epsilon);
-
-    string data_dir1 = "/home/abid/programs/MERA/constructor/orig/";
-    string data_dir2 = "/home/abid/programs/MERA/constructor/flip/";
-    string data_dir3 = "/home/aakhan3/scratch/MERA/data/flip_data/MPS_last_lbit_flip/";
-
-    MPS psi = load_mps(data_dir1, W, L, l, seed, epsilon);
-    MPS phi = load_mps(data_dir2, W, L, l, seed, epsilon);
-    cout<<psiphi(psi, phi)<<endl;
-
-    char fname [50];
-    sprintf(fname, "overlapl_W_%2.4f_L_%d_l_%d_d_%d_e_%0.2f.txt", W, L, l, seed, epsilon);
-    ofstream fout;
-    fout.precision(8);
-    fout.open(fname);
-
-    for(int site=0; site<L; site++)
-        fout<<MPS_partial_overlap(psi, phi, site, 1)<<endl;
+    disorder_average_overlap(W, L, l, epsilon);
+    //for(int site=0; site<L; site++)
+    //overlap_hist(W, L, l, epsilon, seed);
+    //single_overlap( W, L, l, seed, epsilon);
 	return 0;
 }
