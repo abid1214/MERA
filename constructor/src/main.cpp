@@ -34,6 +34,7 @@ typedef Eigen::MatrixXd Mxd;
 #include "sdMERA.h"
 #include "qBlockSolver.h"
 #include "tauSolver.h"
+#include "tests.h"
 
 
 void Abidtest(double W, int L, int l, unsigned seed, double epsilon)
@@ -63,7 +64,7 @@ void Abidtest(double W, int L, int l, unsigned seed, double epsilon)
 	sdM.setWJ(WJ);
 	sdM.setWh(Wh);
 	sdM.setRandomSeed(seed);
-	sdM.setMaxSearchLength(1,l);
+	sdM.setMaxSearchLength(l,l);
 	sdM.setInitialMPO(L,pD,bD, uniform);
     sdM.setOpts(opts);
 
@@ -95,28 +96,11 @@ void Abidtest(double W, int L, int l, unsigned seed, double epsilon)
 
     double E = psiHphi(psi,h,psi);
     double SE = psiHphi(psi,hS,psi);
-    double sz = psiHphi(psi, Sz, psi);
 
-    psi.EE(true);
-    cout<<endl;
-
-    cout<<"MPS Info: "<<E<<" "<<SE-E*E<<" ";
-    psi.EE(false);
-    cout<<" "<<sz<<endl;
-
+    cout<<"MPS Info: "<<E<<" "<<SE-E*E<<endl;
     char fname [50];
-    sprintf(fname, "mps_W_%2.4f_L_%d_l_%d_d_%d_e_%0.2f.txt", W, L, l, seed, epsilon);
-    psi.writeMPS(fname, 10);
-    
-
-    /*
-    if(sdM.good_RG_flow)
-        cout<<1;
-    else
-        cout<<0;
-    
-    cout<<endl<<endl;
-    */
+    //sprintf(fname, "mps_W_%2.4f_L_%d_l_%d_d_%d_e_%0.2f.txt", W, L, l, seed, epsilon);
+    //psi.writeMPS(fname, 10);
 }
 
 MPS load_mps(string data_dir, double W, int L, int l, unsigned seed, double epsilon)
@@ -223,8 +207,9 @@ int main (int argc, char const *argv[])
     double       N = argc>6 ? atof(argv[6]) : 1;
 
     double epsilon =  n/N;
-    //Abidtest(W, L, l, seed, epsilon);
-    disorder_average_overlap(W, L, l, epsilon);
+    //run_tests();
+    Abidtest(W, L, l, seed, epsilon);
+    //disorder_average_overlap(W, L, l, epsilon);
     //for(int site=0; site<L; site++)
     //overlap_hist(W, L, l, epsilon, seed);
     //single_overlap( W, L, l, seed, epsilon);
