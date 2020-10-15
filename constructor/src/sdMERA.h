@@ -33,6 +33,7 @@ public:
 	// MPO variables
 	MPO H;
 	MPO HS;
+    int L0;
 	int L;
 	int pD;
 	int bD;

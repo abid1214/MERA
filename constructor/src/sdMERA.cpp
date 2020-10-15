@@ -77,6 +77,7 @@ void sdMERA::setOpts(char* _opts)
 
 void sdMERA::setInitialMPO(int _L, int _pD, int _bD, bool uniform)
 {
+    L0 = _L;
 	L  = _L;
 	pD = _pD;
 	bD = _bD;
@@ -157,11 +158,12 @@ void sdMERA::unitaryDecimateMPO(char* opts)
 {
 	
     int U_start, U_L;
+    U_L     = (stLen <= L) ? stLen : L;
     //cout<<"finding max gap"<<std::endl;
-	U_start = findMinEntanglement(H, stLen);
+	//U_start = findMinEntanglement(H, stLen);
+	U_start = random_block(L, U_L);
 	//U_start = findMaxGap(H, stLen);
 	//U_start = firstBlock();
-    U_L     = (stLen <= L) ? stLen : L;
     //cout<<"found block "<<U_start<<" to "<<U_start + U_L-1<<endl;
 	
 	        

@@ -9,10 +9,18 @@
 #include "mpo.h"
 #include <cmath>
 #include "simpleWegnerFlow.h"
+#include <time.h>
+#include <stdlib.h>
 #include "wegnerFlow.h"
 
 typedef Eigen::MatrixXd Mxd;
 using namespace std;
+
+int random_block(int L, int l)
+{
+    srand ((time(NULL)));
+    return rand() % (L-l-1);
+}
 
 int findMaxGap(MPO& H, int l)
 {
@@ -115,9 +123,9 @@ double get_E(std::vector<double>& sv)
     double E = 0;
     double Z = 0;
     for(int i = 0; i < sv.size(); i++)
-        Z += sv[i];
+        Z += sv[i]*sv[i];
     for(int i = 0; i < sv.size(); i++)
-        E -= sv[i]/Z*std::log(sv[i]/Z);
+        E -= sv[i]*sv[i]/Z*std::log(sv[i]*sv[i]/Z);
     return E;
 }
 
