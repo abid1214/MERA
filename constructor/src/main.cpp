@@ -35,6 +35,9 @@ typedef Eigen::MatrixXd Mxd;
 #include "qBlockSolver.h"
 #include "tauSolver.h"
 #include "tests.h"
+#include <algorithm>
+#include <math.h>
+#include <random>
 
 
 void Abidtest(double W, int L, int l, unsigned seed, double epsilon)
@@ -45,6 +48,7 @@ void Abidtest(double W, int L, int l, unsigned seed, double epsilon)
 	double WJ = 0;
 	double Wh = W;
 
+    /*
 	std::mt19937 generator(seed);
 	std::uniform_real_distribution<double> distribution(0.0,1.0);
     char* opts = new char [L];
@@ -53,6 +57,18 @@ void Abidtest(double W, int L, int l, unsigned seed, double epsilon)
 
     //opts[L-1] = opts[L-1] == 'H' ? 'L' : 'H';
     //opts[L/2] = opts[L/2] == 'H' ? 'L' : 'H';
+    */
+
+    int t = (int) round(epsilon*L);
+    char* opts = new char [L];
+    for(int j = 0; j < L; j++)
+        opts[L-1-j] = (j < t) ? 'H' : 'L';
+    shuffle(&opts[0], &opts[L], std::default_random_engine(seed));
+    shuffle(&opts[0], &opts[L], std::default_random_engine(seed));
+    shuffle(&opts[0], &opts[L], std::default_random_engine(seed));
+    shuffle(&opts[0], &opts[L], std::default_random_engine(seed));
+    shuffle(&opts[0], &opts[L], std::default_random_engine(seed));
+
 
     for(int j = 0; j < L; ++j)
         cout<<opts[j];
@@ -97,10 +113,13 @@ void Abidtest(double W, int L, int l, unsigned seed, double epsilon)
     double E = psiHphi(psi,h,psi);
     double SE = psiHphi(psi,hS,psi);
 
-    cout<<"MPS Info: "<<E<<" "<<SE-E*E<<endl;
+    cout<<"MPS Info: "<<E<<" "<<SE-E*E<<" ";
+    psi.EE(false);
+    cout<<endl;
+
     char fname [50];
-    //sprintf(fname, "mps_W_%2.4f_L_%d_l_%d_d_%d_e_%0.2f.txt", W, L, l, seed, epsilon);
-    //psi.writeMPS(fname, 10);
+    sprintf(fname, "mps_data/mps_W_%2.4f_L_%d_l_%d_d_%d_e_%0.2f.txt", W, L, l, seed, epsilon);
+    psi.writeMPS(fname, 10);
 }
 
 MPS load_mps(string data_dir, double W, int L, int l, unsigned seed, double epsilon)

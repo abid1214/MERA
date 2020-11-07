@@ -18,8 +18,10 @@ using namespace std;
 
 int random_block(int L, int l)
 {
+    if(l>=L)
+        return 0;
     srand ((time(NULL)));
-    return rand() % (L-l-1);
+    return rand() % (L-l);
 }
 
 int findMaxGap(MPO& H, int l)

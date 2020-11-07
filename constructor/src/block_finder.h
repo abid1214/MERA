@@ -6,8 +6,6 @@
 typedef Eigen::MatrixXd Mxd;
 using namespace std;
 
-int tree_block(int L, int L0, int l);
-
 int random_block(int L, int l);
 
 int findMaxGap(MPO& H, int l);
