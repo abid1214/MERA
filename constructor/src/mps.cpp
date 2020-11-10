@@ -680,8 +680,9 @@ void MPS::writeMPS(std::string filename, int preci)
 	std::cout<<"Writing MPS done!"<<std::endl;
 }
 
-void MPS::EE(bool verbose)
+vector<double> MPS::EE(bool verbose)
 {
+    vector<double> EE_list(Len-1);
 	if(!if_init)
 	{
 		std::cout<<"MPS not initiated!"<<std::endl;
@@ -716,8 +717,8 @@ void MPS::EE(bool verbose)
 			if(sv[j]>0) EEn -= sv[j]*sv[j]*log(sv[j]*sv[j]); 
 		}
 		
-		if(i==(Len/2-1) && !verbose) std::cout<<EEn<<" ";
         if(verbose) std::cout<<EEn<<" ";
+        EE_list[i] = EEn;
 		
 		for(tid = 0; tid < pD; tid++)
 		{
@@ -733,6 +734,7 @@ void MPS::EE(bool verbose)
 		}
 	}
 	delete [] sv;
+    return EE_list;
 }
 
 double MPS::norm()

@@ -54,6 +54,7 @@ public:
 	void buildRTIC(double* dJ, double* dh);
 	void buildSPTC(double* dJ, double* dh);
 	void buildSz(int site);
+    void buildSza(int a);
 	void addMPO(double coeff, const MPO& other);
 	
 	void buildSpMPO();

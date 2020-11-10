@@ -12,6 +12,7 @@
 #include <Eigen/Dense>
 
 typedef Eigen::MatrixXd Mxd;
+using namespace std;
 
 class MPS{
 public:
@@ -49,7 +50,7 @@ public:
 	void writeMPS(std::string filename, int preci);
 	void readMPS(std::string filename);
 	
-	void EE(bool verbose);
+    vector<double> EE(bool verbose);
 	double norm();
     Mxd evaluateMPS(int N);
     Mxd partial_trace(int pos, int l);

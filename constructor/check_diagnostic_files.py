@@ -2,14 +2,8 @@ import numpy as np
 from sys import argv
 from os.path import exists
 
-def get_mera_fname(W, e, dis):
-    data_dir = "../data/L_{}_l_{}/".format(L, l)
-    return "{}W_{}/epsilon_{:02}_{:02}.txt".format(data_dir, W, e, dis)
-
-def get_dmrg_fname(W, dis):
-    data_dir = "../data/dmrg/L_{}/".format(L)
-    return "{}W_{}/epsilon_{:02}.txt".format(data_dir, W, dis)
-
+def get_diagnostics_fname(W, L, l, seed, epsilon):
+    return "diagnostics_data/diag_W_%2.4f_L_%d_l_%d_d_%d_e_%0.2f.txt" % (W, L, l, seed, epsilon)
 
 def check_last_line(fname):
     if not exists(fname):
@@ -19,17 +13,8 @@ def check_last_line(fname):
         if len(data) == 0:
             return False, "file empty"
         last_line = np.array(data[-1].split())
-        if "done!" not in last_line:
+        if "bipartite" not in last_line:
             return  False, "last line error: {}".format(last_line[:10])
-    return True, ""
-
-def check_dmrg_last_line(fname):
-    try:
-        with open(fname, 'r') as fp:
-            data = fp.readlines()[-1].split()
-            minE, maxE = float(data[0]), float(data[1])
-    except Exception as e:
-        return False, e
     return True, ""
 
 if __name__ == "__main__":
@@ -50,7 +35,8 @@ if __name__ == "__main__":
         for W_idx, W in enumerate(W_list):
             for dis in range(num_dis):
                 for e in range(num_energies):
-                    mera_fn = get_mera_fname(W, e, dis)
+                    epsilon = e/(num_energies - 1)
+                    mera_fn = get_diagnostics_fname(W, L, l, dis, epsilon)
                     good_file, msg = check_last_line(mera_fn)
                     if good_file:
                         succ +=1
@@ -60,21 +46,3 @@ if __name__ == "__main__":
                         fail += 1
         print("successes: {}, failures: {}".format(succ, fail))
         f.close()
-
-    exit()
-    succ = 0
-    fail = 0
-    f = open("dmrg_L_{}.txt".format(L), 'w')
-    for W_idx, W in enumerate(W_list):
-        for dis in range(num_dis):
-            mera_fn = get_dmrg_fname(W, dis)
-            good_file, msg = check_dmrg_last_line(mera_fn)
-            if good_file:
-                succ +=1
-            else:
-                print("W = {}, dis = {}: {}".format(W, dis, msg))
-                f.write("{} {}\n".format(W, dis))
-                fail += 1
-    print("successes: {}, failures: {}".format(succ, fail))
-    f.close()
-
