@@ -789,14 +789,11 @@ double MPS::norm()
 
 Mxd MPS::evaluateMPS(int N)
 {
-    int i = N%2;
-    N /= 2;
+    int i = int(N/std::pow(pD, Len-1))%pD;
     Mxd MT = M[0][i];
     for(int site=1; site<Len; site++)
     {
-        i  = N%2;
-        N /= 2;
-        MT *= M[site][i];
+        MT *= M[site][int(N/std::pow(pD, Len-1-site))%pD];
     }
     return MT;
 }

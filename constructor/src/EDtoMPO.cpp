@@ -18,18 +18,18 @@ void EDtoMPO(Mxd& A, int Len, int pD, MPO& H)
 	{
 		for(int j = 0; j < Len; ++j)
 		{
-			phyr[j] = int(row/std::pow(pD,j))%pD;
+			phyr[j] = int(row/std::pow(pD,Len-1-j))%pD;
 		}
 		for(int col = 0; col < size; ++col)
 		{
 			for(int j = 0; j < Len; ++j)
 			{
-				phyc[j] = int(col/std::pow(pD,j))%pD;
+				phyc[j] = int(col/std::pow(pD,Len-1-j))%pD;
 			}
 			idx = 0;
 			for(int i = 0; i < Len; ++i)
 			{
-				idx += std::pow(pD*pD,Len-i-1)*(phyr[i]*pD+phyc[i]);
+				idx += std::pow(pD*pD,Len-1-i)*(phyr[i]*pD+phyc[i]);
 			}
 			v[idx] = A(row,col);
 		}
