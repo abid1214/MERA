@@ -1,0 +1,10 @@
+Initial energy of the MPS: -1.02661
+# DMRG Sweep # Mid bond EE # Energy # Std #
+0 0.00104432 -52.0888 9.72025
+1 0.262815 -54.2254 4.21131e-06
+Initial energy of the MPS: -0.631527
+# DMRG Sweep # Mid bond EE # Energy # Std #
+0 0.00402199 50.5122 9.21993
+1 0.0127474 53.5253 2.93942e-06
+min energy  # max energy
+-54.2254 53.5253
