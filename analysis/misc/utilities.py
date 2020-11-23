@@ -4,32 +4,37 @@ from math import sqrt
 from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
 
-def get_diagnostics_fname(data_dir, W, L, l, seed, epsilon):
-    ''' grabs the file name for MERA config (L, l, W, e, dis) '''
-    return data_dir + ("diag_W_%2.4f_L_%d_l_%d_d_%d_e_%0.2f.txt" % (W, L, l, seed, epsilon))
+NUM_PARAMS = 13
+E_IDX, VAR_IDX, LOGVAR_IDX, EE_IDX, SZ_IDX, EP_MERA_IDX, EP_DMRG_IDX, \
+        EP_ERR_IDX, W_IDX, DIS_IDX, EP_IDX, L_IDX, LL_IDX = list(range(NUM_PARAMS))
 
-def load_diagnostics(L, l, W, epsilon, dis, data_dir):
+def get_mera_fname(L, l, W, e, dis, data_dir=None):
+    ''' grabs the file name for MERA config (L, l, W, e, dis) '''
+    if not data_dir:
+        data_dir = "../data/"
+    data_dir += "L_{}_l_{}/".format(L, l)
+    return "{}W_{}/epsilon_{:02}_{:02}.txt".format(data_dir, W, e, dis)
+
+
+def get_dmrg_fname(L, W, dis, data_dir=None):
+    ''' grabs the file name for DMRG config (L, W, dis) '''
+    if not data_dir:
+        data_dir = "../data/"
+    data_dir += "dmrg/L_{}/".format(L)
+    return "{}W_{}/epsilon_{:02}.txt".format(data_dir, W, dis)
+
+
+def load_diagnostics(L, l, W, e, dis, data_dir):
     ''' loads MERA config (L, l, W, e, dis) data '''
-    fname = get_diagnostics_fname(data_dir, W, L, l, dis, epsilon)
+    fname = get_mera_fname(L, l, W, e, dis, data_dir)
     with open(fname, 'r') as fp:
         data = fp.readlines()
-        EE_list   = np.array((data[0].split())[1:], dtype=float)
-        EE_bip    = EE_list[L//2-1]
-        W_list    = np.array((data[1].split())[1:], dtype=float)
-        energy    = float((data[2].split())[1])
-        variance  = float((data[3].split())[1])
-        spin_fluc = float((data[4].split())[3])
-        return EE_list, EE_bip, W_list, energy, variance, spin_fluc
-
-NUM_PARAMS = 15
-EE_LIST_IDX  , EE_BIP_IDX, H_LIST_IDX , E_IDX      , VAR_IDX,    \
-SPIN_FLUC_IDX, LOGVAR_IDX, EP_MERA_IDX, EP_DMRG_IDX, EP_ERR_IDX, \
-W_IDX        , DIS_IDX   , EP_IDX     , L_IDX      , LL_IDX        = list(range(NUM_PARAMS))
-
-
-def get_dmrg_fname(L, W, dis, data_dir):
-    ''' grabs the file name for DMRG config (L, W, dis) '''
-    return "{}L_{}/W_{}/epsilon_{:02}.txt".format(data_dir, L, W, dis)
+        ll = data[-1].split()
+        try:
+            E, var, EE, Sz = [float(ll[i]) for i in range(2,6)]
+        except Exception as e:
+            print("error with file {}: {}".format(fname, e))
+    return E, var, EE, Sz
 
 
 def get_dmrg_minmax_energies(L, W, dis, data_dir):
@@ -42,36 +47,34 @@ def get_dmrg_minmax_energies(L, W, dis, data_dir):
 
 def get_mera_minmax_energies(L, l, W, dis, num_energies, data_dir):
     ''' returns the min and max energies of a MERA config (L, l, W, dis) '''
-    _,_,_,E_min,_,_ = load_diagnostics(L, l, W, 0, dis, data_dir)
-    _,_,_,E_max,_,_ = load_diagnostics(L, l, W, 1, dis, data_dir)
+    E_min, _,_,_ = load_diagnostics(L, l, W, 0, dis, data_dir)
+    E_max, _,_,_ = load_diagnostics(L, l, W, num_energies-1, dis, data_dir)
     return E_min, E_max
 
 
-def load_all_data(L_list, l_list, W_list, num_dis, num_energies, data_dir, dmrg_dir):
+def load_all_data(L_list, l_list, W_list, num_dis, num_energies, data_dir=None):
     ''' gets MERA and DMRG data for all W, disorders and energies for a
         given (L, l)
     '''
-    num_L, num_l, num_W = len(L_list), len(l_list), len(W_list)
-    all_data = np.zeros((num_L, num_l, num_W, num_dis, num_energies, NUM_PARAMS), dtype=np.object)
+    num_L, num_l, num_W, num_params = len(L_list), len(l_list), len(W_list), NUM_PARAMS
+    all_data = np.zeros((num_L, num_l, num_W, num_dis, num_energies, num_params))
     for L_idx, L in enumerate(L_list):
         for l_idx, l in enumerate(l_list):
             print("L = {}, l = {}".format(L, l))
             for W_idx, W in enumerate(W_list):
                 for dis in range(num_dis):
                     for e in range(num_energies):
-                        epsilon = e/(num_energies-1)
-                        EE_list, EE_bip, h_list, E, var, spin_fluc = load_diagnostics(L, l, W, epsilon, dis, \
-                                                                                     data_dir)
-                        E_min_dmrg, E_max_dmrg = get_dmrg_minmax_energies(L, W, dis, dmrg_dir)
-                        E_min_mera, E_max_mera = get_mera_minmax_energies(L, l, W, dis, num_energies, data_dir)
+                        E, var, EE, Sz = load_diagnostics(L, l, W, e, dis, data_dir)
+                        E_min_dmrg, E_max_dmrg = get_dmrg_minmax_energies(L, W, dis, data_dir)
+                        E_min_mera, E_max_mera = get_mera_minmax_energies(L, l, W, \
+                                dis, num_energies, data_dir)
                         ep_mera = (E - E_min_mera)/(E_max_mera - E_min_mera)
                         ep_dmrg = (E - E_min_dmrg)/(E_max_dmrg - E_min_dmrg)
                         ep_err  = np.sqrt(var)/(E_max_dmrg - E_min_dmrg)
 
-                        all_data[L_idx][l_idx][W_idx][dis][e][:] = np.array([EE_list, EE_bip, h_list, E, var, \
-                                                                             spin_fluc, np.log10(var), \
-                                                                             ep_mera, ep_dmrg, ep_err, W, \
-                                                                             dis, e/(num_energies - 1), L, l])
+                        all_data[L_idx][l_idx][W_idx][dis][e][:] = \
+                                np.array([E, var, np.log10(var), EE, Sz, ep_mera, \
+                                ep_dmrg, ep_err, W, dis, e/(num_energies - 1), L, l])
     return all_data
 
 
