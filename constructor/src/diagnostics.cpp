@@ -90,6 +90,12 @@ double bipartite_spin_fluctuation(MPS psi)
     Sza.setMPO(psi.Len, psi.pD, 2, 0);
     Sza.buildSza(psi.Len/2);
 
+    /*
+    Mxd s;
+    effH(Sza, 0, psi.Len, s);
+    cout<<s<<endl;
+    */
+
     MPO Sza_2;
     Sza_2.setMPO(psi.Len, psi.pD, 2, 0);
     Sza_2.buildSza(psi.Len/2);
@@ -148,6 +154,13 @@ void run_diagnostics(string data_dir, double W, int L, int l, unsigned seed, dou
     for(int i = 0; i < L; i++)
         fout<<Wlist[i]<<" ";
     fout<<endl;
+
+    /*
+    fout<<"psi: "<<endl;
+    for(int i = 0; i < pow(psi.pD, psi.Len); i++)
+        fout<<psi.evaluateMPS(i)<<endl;
+    fout<<endl;
+    */
     
     //fout<<"Participation Entropy q=1:  "<<participation_entropy(psi, 1)<<endl;
     //fout<<"Participation Entropy q=2:  "<<participation_entropy(psi, 2)<<endl;

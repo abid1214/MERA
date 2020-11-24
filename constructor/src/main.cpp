@@ -77,6 +77,19 @@ void Abidtest(double W, int L, int l, unsigned seed, double epsilon)
     h.setMPO(L, pD, bD, 0);
     h.buildHeisenberg(&(sdM.dJ[0]), &(sdM.dh[0]));
 
+    
+    /**
+    Mxd H;
+    effH(h, 0, L, H);
+    cout<<H<<endl;
+
+    MPO U;
+    EDtoMPO(H, L, pD, U);
+
+    effH(U, 0, L, H);
+    cout<<H<<endl;
+    */
+
 
     MPO hS;
     hS.clearMPO();
@@ -124,7 +137,7 @@ int main (int argc, char const *argv[])
 
     double epsilon =  n/N;
     //run_tests();
-    //Abidtest(W, L, l, seed, epsilon);
+    Abidtest(W, L, l, seed, epsilon);
     //disorder_average_overlap(W, L, l, epsilon);
     //for(int site=0; site<L; site++)
     //overlap_hist(W, L, l, epsilon, seed);

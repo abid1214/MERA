@@ -160,7 +160,7 @@ void sdMERA::unitaryDecimateMPO(char* opts)
     int U_start, U_L;
     U_L     = (stLen <= L) ? stLen : L;
     //cout<<"finding max gap"<<std::endl;
-	U_start = findMinEntanglement(H, stLen);
+	U_start = findMinEntanglement(H, U_L);
 	//U_start = random_block(L, U_L);
 	//U_start = findMaxGap(H, stLen);
 	//U_start = firstBlock();
@@ -186,6 +186,7 @@ void sdMERA::unitaryDecimateMPO(char* opts)
 		Init_Tau *= 1.1;
 	}
 	D = (U.transpose() * A * U).diagonal();
+    //cout<<U<<endl;
 	
 	// Which index to fix?
 	// Fix to 0 or 1?

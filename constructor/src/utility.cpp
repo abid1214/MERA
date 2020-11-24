@@ -99,7 +99,7 @@ void effH(MPO& H, int site, int L, Mxd& Heff)
 	// Build the dense effective Hamiltnonian
 	// The default ordering of the basis vectors:
 	// 0: +, 1: -
-	// 00...0, 10...0, ...
+	// 0...00, 0...01, ...
 	int size = std::pow(pD,L);
 	// std::cout<<"size "<<size<<std::endl;
 	int phyr[L];
@@ -109,13 +109,13 @@ void effH(MPO& H, int site, int L, Mxd& Heff)
 	{
 		for(int j = 0; j < L; ++j)
 		{
-			phyr[j] = int(row/std::pow(pD,j))%pD;
+			phyr[j] = int(row/std::pow(pD,L-1-j))%pD;
 		}
 		for(int col = 0; col < size; ++col)
 		{
 			for(int j = 0; j < L; ++j)
 			{
-				phyc[j] = int(col/std::pow(pD,j))%pD;
+				phyc[j] = int(col/std::pow(pD,L-1-j))%pD;
 			}
 			Mxd tp(H.Dim[site],H.Dim[site]);
 			tp.setIdentity();
